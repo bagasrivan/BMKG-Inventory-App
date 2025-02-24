@@ -1,3 +1,42 @@
+<<<<<<< HEAD
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+=======
+<<<<<<< HEAD
+# See https://www.dartlang.org/guides/libraries/private-files
+>>>>>>> 32d7528 (Commit sebelum pull rebase)
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+<<<<<<< HEAD
+=======
+=======
 # Miscellaneous
 *.class
 *.log
@@ -29,6 +68,7 @@ migrate_working_dir/
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
+>>>>>>> 32d7528 (Commit sebelum pull rebase)
 .pub-cache/
 .pub/
 /build/
@@ -43,3 +83,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+<<<<<<< HEAD
+=======
+>>>>>>> 5918677 (Initial commit)
+>>>>>>> 32d7528 (Commit sebelum pull rebase)
