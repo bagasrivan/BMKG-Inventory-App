@@ -1,5 +1,6 @@
 import 'package:bmkg_inventory_system/homePage.dart';
 import 'package:bmkg_inventory_system/inventoryPage.dart';
+import 'package:bmkg_inventory_system/logPage.dart';
 import 'package:bmkg_inventory_system/profilePage.dart';
 import 'package:flutter/material.dart';
 
@@ -15,6 +16,7 @@ class _NavigationState extends State<Navigation> {
   final List<Widget> _pages = [
     const HomePage(),
     const InventoryPage(),
+    const LogPage(),
     const ProfilePage(),
   ];
 
@@ -37,6 +39,7 @@ class _NavigationState extends State<Navigation> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.inventory), label: 'Barang'),
+          BottomNavigationBarItem(icon: Icon(Icons.history), label: 'Riwayat'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),

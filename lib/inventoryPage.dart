@@ -114,12 +114,12 @@ class _InventoryState extends State<InventoryPage> {
                   leading: Image.asset(item['image']!, width: 50),
                   title: Text(
                     item['name']!,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(item['category']!),
+                      Text(item['category']!, style: TextStyle(fontSize: 12),),
                       Row(
                         children: [
                           Icon(
@@ -127,7 +127,7 @@ class _InventoryState extends State<InventoryPage> {
                             size: 14,
                             color: Colors.blue[200],
                           ),
-                          Text(item['location']!),
+                          Text(item['location']!, style: TextStyle(fontSize: 12),),
                         ],
                       )
                     ],
