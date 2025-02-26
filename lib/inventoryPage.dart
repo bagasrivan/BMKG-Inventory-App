@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class InventoryPage extends StatefulWidget {
@@ -17,7 +16,7 @@ class _InventoryState extends State<InventoryPage> {
       "category": "Peralatan Operasional",
       "location": "Gudang Operasional",
       "status": "Tersedia",
-      "image": "assets/ht.png"
+      "image": "assets/handytalky.png"
     },
     {
       "name": "Mobil Dinas BMKG",
@@ -80,6 +79,25 @@ class _InventoryState extends State<InventoryPage> {
               ).toList(),
             ),
           ),
+          SizedBox(height: 10,),
+          Expanded(child: ListView.builder(
+            itemCount: items.length,
+            itemBuilder: (context, index) {
+              var item = items[index];
+              return Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: ListTile(
+                  leading: Image.asset(item['image']!, width: 50),
+                  title: Text(
+                    item['name']!,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              );
+            },
+          ))
         ]),
       ),
     );

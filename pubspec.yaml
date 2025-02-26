@@ -61,6 +61,9 @@ flutter:
   - assets/image.png
   - assets/hands-holding.png
   - assets/profile.png
+  - assets/handytalky.png
+  - assets/car.png
+  - assets/printer.png
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
