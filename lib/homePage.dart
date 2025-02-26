@@ -118,10 +118,10 @@ class _HomeState extends State<HomePage> {
             ),
             TextField(
               decoration: InputDecoration(
-                hintText: "Cari Barang",
+                hintText: "Cari barang",
                 prefixIcon: const Icon(Icons.search, color: Colors.black),
                 suffixIcon: IconButton(
-                  icon: const Icon(Icons.qr_code_scanner, color: Colors.black),
+                  icon: Icon(Icons.qr_code_scanner, color: Colors.blue[400]),
                   onPressed: () {
                     // Tambahkan aksi untuk scan QR Code di sini
                   },

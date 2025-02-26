@@ -32,9 +32,23 @@ class _InventoryState extends State<InventoryPage> {
       "status": "Tersedia",
       "image": "assets/printer.png"
     },
+    {
+      "name": "Tangga Lipat",
+      "category": "Peralatan Operasional",
+      "location": "Gudang Operasional",
+      "status": "Tidak Tersedia",
+      "image": "assets/tanggalipat.png"
+    }
   ];
 
   Widget build(BuildContext context) {
+    List<Map<String, String>> filteredItems = items.where((item) {
+      if (selectedCategory == "Semua") {
+        return true;
+      } else {
+        return item["status"] == "Tersedia";
+      }
+    }).toList();
     return Scaffold(
       appBar: AppBar(
         title: Text('Barang'),
@@ -47,8 +61,13 @@ class _InventoryState extends State<InventoryPage> {
         child: Column(children: [
           TextField(
             decoration: InputDecoration(
-                hintText: 'Cari nama barang, barcode, kategori',
+                hintText: 'Cari nama barang',
                 prefixIcon: Icon(Icons.search),
+                suffixIcon: IconButton(
+                  icon: Icon(Icons.qr_code_scanner),
+                  color: Colors.blue[400],
+                  onPressed: () {},
+                ),
                 filled: true,
                 fillColor: Colors.grey[60],
                 border: OutlineInputBorder(
@@ -79,9 +98,12 @@ class _InventoryState extends State<InventoryPage> {
               ).toList(),
             ),
           ),
-          SizedBox(height: 10,),
-          Expanded(child: ListView.builder(
-            itemCount: items.length,
+          SizedBox(
+            height: 10,
+          ),
+          Expanded(
+              child: ListView.builder(
+            itemCount: filteredItems.length,
             itemBuilder: (context, index) {
               var item = items[index];
               return Card(
@@ -93,6 +115,30 @@ class _InventoryState extends State<InventoryPage> {
                   title: Text(
                     item['name']!,
                     style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(item['category']!),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.location_on,
+                            size: 14,
+                            color: Colors.blue[200],
+                          ),
+                          Text(item['location']!),
+                        ],
+                      )
+                    ],
+                  ),
+                  trailing: Text(
+                    item['status']!,
+                    style: TextStyle(
+                        color: item['status'] == 'Tersedia'
+                            ? Colors.green
+                            : Colors.red,
+                        fontSize: 10),
                   ),
                 ),
               );
