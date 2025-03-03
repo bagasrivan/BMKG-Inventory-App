@@ -54,6 +54,7 @@ class _InventoryState extends State<InventoryPage> {
         title: Text('Barang'),
         centerTitle: true,
         backgroundColor: Colors.blue[200],
+        automaticallyImplyLeading: false,
         titleTextStyle: TextStyle(fontSize: 20, color: Colors.black),
       ),
       body: Padding(

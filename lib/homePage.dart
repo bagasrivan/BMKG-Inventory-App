@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:bmkg_inventory_system/scanPage.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -26,12 +28,27 @@ class _HomeState extends State<HomePage> {
     return "${now.day} ${months[now.month - 1]} ${now.year}";
   }
 
+  TextEditingController _searchController = TextEditingController();
+
+  void _scanBarcode() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => ScanPage()),
+    );
+    if (result != null) {
+      setState(() {
+        _searchController.text = result;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Home'),
         centerTitle: true,
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.blue[200],
         titleTextStyle: const TextStyle(fontSize: 20, color: Colors.black),
       ),
@@ -122,9 +139,7 @@ class _HomeState extends State<HomePage> {
                 prefixIcon: const Icon(Icons.search, color: Colors.black),
                 suffixIcon: IconButton(
                   icon: Icon(Icons.qr_code_scanner, color: Colors.blue[400]),
-                  onPressed: () {
-                    // Tambahkan aksi untuk scan QR Code di sini
-                  },
+                  onPressed: _scanBarcode,
                 ),
                 filled: true,
                 fillColor: Colors.grey[60],
@@ -138,51 +153,6 @@ class _HomeState extends State<HomePage> {
             const SizedBox(
               height: 10,
             ),
-            Card(
-              color: Colors.grey[80],
-              elevation: 6,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20)),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(20),
-                child: Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        'Tambah Barang',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      SizedBox(
-                        height: 20,
-                      ),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.qr_code,
-                            size: 18,
-                          ),
-                          SizedBox(
-                            width: 10,
-                          ),
-                          Text(
-                            'Daftarkan Barang Baru',
-                            style: TextStyle(fontSize: 11),
-                          ),
-                          SizedBox(
-                            width: 138,
-                          ),
-                          Icon(Icons.keyboard_arrow_right)
-                        ],
-                      )
-                    ],
-                  ),
-                ),
-                onTap: () {},
-              ),
-            ),
             SizedBox(
               height: 7,
             ),
@@ -194,7 +164,7 @@ class _HomeState extends State<HomePage> {
               child: InkWell(
                 borderRadius: BorderRadius.circular(20),
                 child: Padding(
-                  padding: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(15),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -211,17 +181,17 @@ class _HomeState extends State<HomePage> {
                           children: [
                             Icon(
                               Icons.assignment_add,
-                              size: 18,
+                              size: 24,
                             ),
                             SizedBox(
-                              width: 10,
+                              width: 12,
                             ),
                             Text(
                               'Peminjaman Barang',
-                              style: TextStyle(fontSize: 11),
+                              style: TextStyle(fontSize: 18),
                             ),
                             SizedBox(
-                              width: 151,
+                              width: 80,
                             ),
                             Icon(Icons.keyboard_arrow_right)
                           ],
@@ -229,24 +199,24 @@ class _HomeState extends State<HomePage> {
                         onTap: () {},
                       ),
                       SizedBox(
-                        height: 10,
+                        height: 16,
                       ),
                       InkWell(
                         child: Row(
                           children: [
                             Icon(
                               Icons.assignment_return,
-                              size: 18,
+                              size: 24,
                             ),
                             SizedBox(
-                              width: 10,
+                              width: 12,
                             ),
                             Text(
                               'Pengembalian Barang',
-                              style: TextStyle(fontSize: 11),
+                              style: TextStyle(fontSize: 18),
                             ),
                             SizedBox(
-                              width: 140,
+                              width: 62,
                             ),
                             Icon(Icons.keyboard_arrow_right),
                           ],
@@ -260,32 +230,6 @@ class _HomeState extends State<HomePage> {
             ),
             SizedBox(
               height: 7,
-            ),
-            Card(
-              color: Colors.grey[80],
-              elevation: 6,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20)),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(10),
-                child: Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text('Barang Menunggu Persetujuan', style: TextStyle(fontSize: 16),),
-                          SizedBox(width: 46,),
-                          Icon(Icons.keyboard_arrow_right),
-                        ],
-                      )
-                    ],
-                  ),
-                ),
-                onTap: () {},
-              ),
             ),
           ],
         ),
