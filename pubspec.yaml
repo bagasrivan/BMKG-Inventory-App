@@ -59,7 +59,7 @@ flutter:
   uses-material-design: true
   assets:
   - assets/logo-bmkg.png
-  - assets/image.png
+  - assets/logo-splash.png
   - assets/hands-holding.png
   - assets/profile.png
   - assets/handytalky.png

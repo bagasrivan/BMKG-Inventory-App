@@ -10,7 +10,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(Duration(seconds: 4), () {
+    Future.delayed(Duration(seconds: 3), () {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => Login()),
@@ -26,11 +26,11 @@ class _SplashScreenState extends State<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset(
-              'assets/image.png',
-              width: 150,
+              'assets/logo-splash.png',
+              width: 80,
             ),
             SizedBox(
-              height: 2,
+              height: 18,
             ),
             Text(
               'BMKG INVENTORY SYSTEM',

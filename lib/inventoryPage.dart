@@ -1,3 +1,4 @@
+import 'package:bmkg_inventory_system/scanPage.dart';
 import 'package:flutter/material.dart';
 
 class InventoryPage extends StatefulWidget {
@@ -41,6 +42,20 @@ class _InventoryState extends State<InventoryPage> {
     }
   ];
 
+  TextEditingController _searchController = TextEditingController();
+
+  void _scanBarcode() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => ScanPage()),
+    );
+    if (result != null) {
+      setState(() {
+        _searchController.text = result;
+      });
+    }
+  }
+
   Widget build(BuildContext context) {
     List<Map<String, String>> filteredItems = items.where((item) {
       if (selectedCategory == "Semua") {
@@ -67,7 +82,7 @@ class _InventoryState extends State<InventoryPage> {
                 suffixIcon: IconButton(
                   icon: Icon(Icons.qr_code_scanner),
                   color: Colors.blue[400],
-                  onPressed: () {},
+                  onPressed: _scanBarcode,
                 ),
                 filled: true,
                 fillColor: Colors.grey[60],
