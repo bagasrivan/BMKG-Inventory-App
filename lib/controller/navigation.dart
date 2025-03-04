@@ -1,6 +1,6 @@
-import 'package:bmkg_inventory_system/homePage.dart';
-import 'package:bmkg_inventory_system/inventoryPage.dart';
-import 'package:bmkg_inventory_system/profilePage.dart';
+import 'package:bmkg_inventory_system/view/homePage.dart';
+import 'package:bmkg_inventory_system/view/inventoryPage.dart';
+import 'package:bmkg_inventory_system/view/profilePage.dart';
 import 'package:flutter/material.dart';
 
 class Navigation extends StatefulWidget {

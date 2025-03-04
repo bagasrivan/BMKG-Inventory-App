@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:bmkg_inventory_system/scanPage.dart';
+import 'package:bmkg_inventory_system/view/scanPage.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

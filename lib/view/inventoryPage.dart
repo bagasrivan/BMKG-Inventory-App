@@ -1,4 +1,4 @@
-import 'package:bmkg_inventory_system/scanPage.dart';
+import 'package:bmkg_inventory_system/view/scanPage.dart';
 import 'package:flutter/material.dart';
 
 class InventoryPage extends StatefulWidget {

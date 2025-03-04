@@ -1,7 +1,7 @@
-import 'package:bmkg_inventory_system/splash.dart';
-import 'package:bmkg_inventory_system/login.dart';
-import 'package:bmkg_inventory_system/navigation.dart';
-import 'package:bmkg_inventory_system/homePage.dart';
+import 'package:bmkg_inventory_system/controller/splash.dart';
+import 'package:bmkg_inventory_system/view/loginPage.dart';
+import 'package:bmkg_inventory_system/controller/navigation.dart';
+import 'package:bmkg_inventory_system/view/homePage.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -21,7 +21,7 @@ class InventoryApp extends StatelessWidget {
       initialRoute: '/splash',
       routes: {
         '/splash': (context) => SplashScreen(),
-        '/login': (context) => const Login(),
+        '/login': (context) => const LoginPage(),
         '/navigation': (context) => const Navigation(),
         '/home': (context) => const HomePage(),
       },
