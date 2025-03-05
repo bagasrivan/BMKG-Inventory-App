@@ -1,3 +1,4 @@
+import 'package:bmkg_inventory_system/view/addPage.dart';
 import 'package:flutter/material.dart';
 import 'package:bmkg_inventory_system/view/scanPage.dart';
 
@@ -189,13 +190,16 @@ class _HomeState extends State<HomePage> {
                               'Peminjaman Barang',
                               style: TextStyle(fontSize: 18),
                             ),
-                            SizedBox(
-                              width: 80,
-                            ),
+                            Spacer(),
                             Icon(Icons.keyboard_arrow_right)
                           ],
                         ),
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => AddPage()));
+                        },
                       ),
                       SizedBox(
                         height: 16,

@@ -77,7 +77,7 @@ class _InventoryState extends State<InventoryPage> {
         child: Column(children: [
           TextField(
             decoration: InputDecoration(
-                hintText: 'Cari nama barang',
+                hintText: 'Cek ketersediaan barang',
                 prefixIcon: Icon(Icons.search),
                 suffixIcon: IconButton(
                   icon: Icon(Icons.qr_code_scanner),
