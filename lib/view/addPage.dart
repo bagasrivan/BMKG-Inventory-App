@@ -179,7 +179,7 @@ class _AddState extends State<AddPage> {
               ],
             ),
             SizedBox(
-              height: 300,
+              height: 60,
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
