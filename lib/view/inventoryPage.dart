@@ -39,10 +39,101 @@ class _InventoryState extends State<InventoryPage> {
       "location": "Gudang Operasional",
       "status": "Tidak Tersedia",
       "image": "assets/tanggalipat.png"
-    }
+    },
+    {
+      "name": "Handy Talky 2",
+      "category": "Peralatan Operasional",
+      "location": "Gudang Operasional",
+      "status": "Tersedia",
+      "image": "assets/handytalky.png"
+    },
+    {
+      "name": "Mobil Dinas BMKG 2",
+      "category": "Kendaraan Operasional",
+      "location": "Gudang Stasiun",
+      "status": "Tersedia",
+      "image": "assets/car.png"
+    },
+    {
+      "name": "Printer Canon TS9521C 2",
+      "category": "Alat Tulis Kantor",
+      "location": "Gudang TU",
+      "status": "Tidak Tersedia",
+      "image": "assets/printer.png"
+    },
+    {
+      "name": "Tangga Lipat 2",
+      "category": "Peralatan Operasional",
+      "location": "Gudang Operasional",
+      "status": "Tersedia",
+      "image": "assets/tanggalipat.png"
+    },
+    {
+      "name": "Handy Talky 3",
+      "category": "Peralatan Operasional",
+      "location": "Gudang Operasional",
+      "status": "Tersedia",
+      "image": "assets/handytalky.png"
+    },
+    {
+      "name": "Mobil Dinas BMKG 3",
+      "category": "Kendaraan Operasional",
+      "location": "Gudang Stasiun",
+      "status": "Tidak Tersedia",
+      "image": "assets/car.png"
+    },
+    {
+      "name": "Printer Canon TS9521C 3",
+      "category": "Alat Tulis Kantor",
+      "location": "Gudang TU",
+      "status": "Tersedia",
+      "image": "assets/printer.png"
+    },
+    {
+      "name": "Tangga Lipat 3",
+      "category": "Peralatan Operasional",
+      "location": "Gudang Operasional",
+      "status": "Tersedia",
+      "image": "assets/tanggalipat.png"
+    },
+    {
+      "name": "Handy Talky 4",
+      "category": "Peralatan Operasional",
+      "location": "Gudang Operasional",
+      "status": "Tidak Tersedia",
+      "image": "assets/handytalky.png"
+    },
+    {
+      "name": "Mobil Dinas BMKG 4",
+      "category": "Kendaraan Operasional",
+      "location": "Gudang Stasiun",
+      "status": "Tersedia",
+      "image": "assets/car.png"
+    },
+    {
+      "name": "Printer Canon TS9521C 4",
+      "category": "Alat Tulis Kantor",
+      "location": "Gudang TU",
+      "status": "Tersedia",
+      "image": "assets/printer.png"
+    },
+    {
+      "name": "Tangga Lipat 4",
+      "category": "Peralatan Operasional",
+      "location": "Gudang Operasional",
+      "status": "Tersedia",
+      "image": "assets/tanggalipat.png"
+    },
   ];
 
   TextEditingController _searchController = TextEditingController();
+
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      setState(() {});
+    });
+  }
 
   void _scanBarcode() async {
     final result = await Navigator.push(
@@ -56,14 +147,29 @@ class _InventoryState extends State<InventoryPage> {
     }
   }
 
-  Widget build(BuildContext context) {
-    List<Map<String, String>> filteredItems = items.where((item) {
-      if (selectedCategory == "Semua") {
-        return true;
-      } else {
-        return item["status"] == "Tersedia";
-      }
+  List<Map<String, String>> getFilteredItems() {
+    String query = _searchController.text.toLowerCase();
+
+    return items.where((item) {
+      bool matchesCategory =
+          selectedCategory == "Semua Barang" || item['status'] == "Tersedia";
+      bool matchesSearch = item['name']!.toLowerCase().contains(query);
+
+      return matchesCategory && matchesSearch;
     }).toList();
+  }
+
+  Widget build(BuildContext context) {
+    List<Map<String, String>> filteredItems = getFilteredItems();
+
+    filteredItems.sort((a, b) {
+      if (a['status'] == "Tidak Tersedia" && b['status'] == "Tersedia") {
+        return 1;
+      } else if (a['status'] == "Tersedia" && b['status'] == "Tidak Tersedia") {
+        return -1;
+      }
+      return 0;
+    });
     return Scaffold(
       appBar: AppBar(
         title: Text('Barang'),
@@ -76,6 +182,7 @@ class _InventoryState extends State<InventoryPage> {
         padding: const EdgeInsets.all(16),
         child: Column(children: [
           TextField(
+            controller: _searchController,
             decoration: InputDecoration(
                 hintText: 'Cek ketersediaan barang',
                 prefixIcon: Icon(Icons.search),
@@ -121,7 +228,7 @@ class _InventoryState extends State<InventoryPage> {
               child: ListView.builder(
             itemCount: filteredItems.length,
             itemBuilder: (context, index) {
-              var item = items[index];
+              var item = filteredItems[index];
               return Card(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
@@ -130,12 +237,16 @@ class _InventoryState extends State<InventoryPage> {
                   leading: Image.asset(item['image']!, width: 50),
                   title: Text(
                     item['name']!,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(item['category']!, style: TextStyle(fontSize: 12),),
+                      Text(
+                        item['category']!,
+                        style: TextStyle(fontSize: 12),
+                      ),
                       Row(
                         children: [
                           Icon(
@@ -143,7 +254,10 @@ class _InventoryState extends State<InventoryPage> {
                             size: 14,
                             color: Colors.blue[200],
                           ),
-                          Text(item['location']!, style: TextStyle(fontSize: 12),),
+                          Text(
+                            item['location']!,
+                            style: TextStyle(fontSize: 12),
+                          ),
                         ],
                       )
                     ],

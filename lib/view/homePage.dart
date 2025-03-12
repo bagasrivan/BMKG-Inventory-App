@@ -1,7 +1,5 @@
 import 'package:bmkg_inventory_system/view/addPage.dart';
 import 'package:flutter/material.dart';
-import 'package:bmkg_inventory_system/view/scanPage.dart';
-
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -27,21 +25,7 @@ class _HomeState extends State<HomePage> {
     ];
     return "${now.day} ${months[now.month - 1]} ${now.year}";
   }
-
-  TextEditingController _searchController = TextEditingController();
-
-  void _scanBarcode() async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => ScanPage()),
-    );
-    if (result != null) {
-      setState(() {
-        _searchController.text = result;
-      });
-    }
-  }
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -83,7 +67,7 @@ class _HomeState extends State<HomePage> {
                         children: const [
                           Column(
                             children: [
-                              Text("0",
+                              Text("12",
                                   style: TextStyle(
                                       fontSize: 22,
                                       fontWeight: FontWeight.bold)),
@@ -95,7 +79,7 @@ class _HomeState extends State<HomePage> {
                           ),
                           Column(
                             children: [
-                              Text("0",
+                              Text("8",
                                   style: TextStyle(
                                       fontSize: 22,
                                       fontWeight: FontWeight.bold)),
@@ -107,7 +91,7 @@ class _HomeState extends State<HomePage> {
                           ),
                           Column(
                             children: [
-                              Text("0",
+                              Text("4",
                                   style: TextStyle(
                                       fontSize: 22,
                                       fontWeight: FontWeight.bold)),
@@ -129,26 +113,6 @@ class _HomeState extends State<HomePage> {
                   ),
                 ],
               ),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            TextField(
-              decoration: InputDecoration(
-                hintText: "Cari barang",
-                prefixIcon: const Icon(Icons.search, color: Colors.black),
-                suffixIcon: IconButton(
-                  icon: Icon(Icons.qr_code_scanner, color: Colors.blue[400]),
-                  onPressed: _scanBarcode,
-                ),
-                filled: true,
-                fillColor: Colors.grey[60],
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-              style: const TextStyle(color: Colors.black),
             ),
             const SizedBox(
               height: 10,

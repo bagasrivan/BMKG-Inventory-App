@@ -8,8 +8,8 @@ class ChooseItemPage extends StatefulWidget {
 }
 
 class _ChooseItemState extends State<ChooseItemPage> {
-  List<String> categories = ["Semua", "Tersedia"];
-  String selectedCategory = "Semua";
+  List<String> categories = ["Tersedia", "Semua Barang"];
+  String selectedCategory = "Tersedia";
   Set<String> selectedItems = {};
 
   List<Map<String, String>> items = [
@@ -40,10 +40,101 @@ class _ChooseItemState extends State<ChooseItemPage> {
       "location": "Gudang Operasional",
       "status": "Tidak Tersedia",
       "image": "assets/tanggalipat.png"
-    }
+    },
+    {
+      "name": "Handy Talky 2",
+      "category": "Peralatan Operasional",
+      "location": "Gudang Operasional",
+      "status": "Tersedia",
+      "image": "assets/handytalky.png"
+    },
+    {
+      "name": "Mobil Dinas BMKG 2",
+      "category": "Kendaraan Operasional",
+      "location": "Gudang Stasiun",
+      "status": "Tersedia",
+      "image": "assets/car.png"
+    },
+    {
+      "name": "Printer Canon TS9521C 2",
+      "category": "Alat Tulis Kantor",
+      "location": "Gudang TU",
+      "status": "Tidak Tersedia",
+      "image": "assets/printer.png"
+    },
+    {
+      "name": "Tangga Lipat 2",
+      "category": "Peralatan Operasional",
+      "location": "Gudang Operasional",
+      "status": "Tersedia",
+      "image": "assets/tanggalipat.png"
+    },
+    {
+      "name": "Handy Talky 3",
+      "category": "Peralatan Operasional",
+      "location": "Gudang Operasional",
+      "status": "Tersedia",
+      "image": "assets/handytalky.png"
+    },
+    {
+      "name": "Mobil Dinas BMKG 3",
+      "category": "Kendaraan Operasional",
+      "location": "Gudang Stasiun",
+      "status": "Tidak Tersedia",
+      "image": "assets/car.png"
+    },
+    {
+      "name": "Printer Canon TS9521C 3",
+      "category": "Alat Tulis Kantor",
+      "location": "Gudang TU",
+      "status": "Tersedia",
+      "image": "assets/printer.png"
+    },
+    {
+      "name": "Tangga Lipat 3",
+      "category": "Peralatan Operasional",
+      "location": "Gudang Operasional",
+      "status": "Tersedia",
+      "image": "assets/tanggalipat.png"
+    },
+    {
+      "name": "Handy Talky 4",
+      "category": "Peralatan Operasional",
+      "location": "Gudang Operasional",
+      "status": "Tidak Tersedia",
+      "image": "assets/handytalky.png"
+    },
+    {
+      "name": "Mobil Dinas BMKG 4",
+      "category": "Kendaraan Operasional",
+      "location": "Gudang Stasiun",
+      "status": "Tersedia",
+      "image": "assets/car.png"
+    },
+    {
+      "name": "Printer Canon TS9521C 4",
+      "category": "Alat Tulis Kantor",
+      "location": "Gudang TU",
+      "status": "Tersedia",
+      "image": "assets/printer.png"
+    },
+    {
+      "name": "Tangga Lipat 4",
+      "category": "Peralatan Operasional",
+      "location": "Gudang Operasional",
+      "status": "Tersedia",
+      "image": "assets/tanggalipat.png"
+    },
   ];
 
   TextEditingController _searchController = TextEditingController();
+
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      setState(() {});
+    });
+  }
 
   void _scanBarcode() async {
     final result = await Navigator.push(
@@ -58,24 +149,66 @@ class _ChooseItemState extends State<ChooseItemPage> {
   }
 
   void _onComplete() {
-    if(selectedItems.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Silahkan pilih minimal satu barang'),
-        backgroundColor: Colors.red,)
-      );
+    if (selectedItems.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Silahkan pilih minimal satu barang'),
+        backgroundColor: Colors.red,
+      ));
     } else {
-      print('Barang dipilih : $selectedItems');
+      Navigator.pop(context, selectedItems.toList());
     }
   }
 
-  Widget build(BuildContext) {
-    List<Map<String, String>> filteredItems = items.where((item) {
-      if (selectedCategory == "Semua") {
-        return true;
-      } else {
-        return item["status"] == "Tersedia";
-      }
+  void _confirmSelection(String itemName) {
+    showDialog(
+        context: context,
+        builder: (BuildContext build) {
+          return AlertDialog(
+            title: Text('Konfirmasi Peminjaman Barang'),
+            content: Text('Apakah anda yakin ingin meminjam $itemName?'),
+            actions: [
+              TextButton(
+                child: Text('Batal'),
+                onPressed: Navigator.of(context).pop,
+              ),
+              TextButton(
+                child: Text('Ya'),
+                onPressed: () {
+                  setState(() {
+                    selectedItems.add(itemName);
+                  });
+                  Navigator.of(context).pop();
+                },
+              )
+            ],
+          );
+        });
+  }
+
+  List<Map<String, String>> getFilteredItems() {
+    String query = _searchController.text.toLowerCase();
+
+    return items.where((item) {
+      bool matchesCategory =
+          selectedCategory == "Semua Barang" || item['status'] == "Tersedia";
+      bool matchesSearch = item['name']!.toLowerCase().contains(query);
+
+      return matchesCategory && matchesSearch;
     }).toList();
+  }
+
+  Widget build(BuildContext) {
+    List<Map<String, String>> filteredItems = getFilteredItems();
+
+    filteredItems.sort((a, b) {
+      if (a['status'] == "Tidak Tersedia" && b['status'] == "Tersedia") {
+        return 1;
+      } else if (a['status'] == "Tersedia" && b['status'] == "Tidak Tersedia") {
+        return -1;
+      }
+      return 0;
+    });
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Pilih Barang'),
@@ -88,6 +221,7 @@ class _ChooseItemState extends State<ChooseItemPage> {
           Padding(
             padding: const EdgeInsets.all(10),
             child: TextField(
+              controller: _searchController,
               decoration: InputDecoration(
                   hintText: 'Cari nama barang atau scan barcode',
                   hintStyle: TextStyle(fontSize: 12),
@@ -131,7 +265,7 @@ class _ChooseItemState extends State<ChooseItemPage> {
               child: ListView.builder(
                 itemCount: filteredItems.length,
                 itemBuilder: (context, index) {
-                  var item = items[index];
+                  var item = filteredItems[index];
                   bool isSelected = selectedItems.contains(item['name']);
                   return Card(
                     shape: RoundedRectangleBorder(
@@ -166,29 +300,40 @@ class _ChooseItemState extends State<ChooseItemPage> {
                             )
                           ],
                         ),
-                        trailing: ElevatedButton(
-                          child: Text(
-                            isSelected ? 'Batal' : 'Pilih',
-                            style: TextStyle(
-                                fontSize: 10, fontWeight: FontWeight.bold),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey.shade50,
-                            foregroundColor: Colors.blue,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              if (isSelected) {
-                                selectedItems.remove(item['name']);
-                              } else {
-                                selectedItems.add(item['name']!);
-                              }
-                            });
-                          },
-                        )),
+                        trailing: item['status'] == "Tidak Tersedia"
+                            ? Text(
+                                'Tidak Tersedia',
+                                style: TextStyle(
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 10),
+                              )
+                            : ElevatedButton(
+                                child: Text(
+                                  isSelected ? 'Batal' : 'Pilih',
+                                  style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.grey.shade50,
+                                  foregroundColor: Colors.blue,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                onPressed: item['status'] == "Tidak Tersedia"
+                                    ? null
+                                    : () {
+                                        setState(() {
+                                          if (isSelected) {
+                                            selectedItems.remove(item['name']);
+                                          } else {
+                                            _confirmSelection(item['name']!);
+                                          }
+                                        });
+                                      },
+                              )),
                   );
                 },
               ),
@@ -229,13 +374,13 @@ class _ChooseItemState extends State<ChooseItemPage> {
                   ),
                   onPressed: _onComplete,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.blue,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10)
-                  ),
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.blue,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 30, vertical: 10)),
                 ),
               ],
             ),
