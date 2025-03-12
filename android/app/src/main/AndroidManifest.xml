@@ -4,7 +4,7 @@
     <uses-feature android:name="android.hardware.camera.autofocus" />
 
     <application
-        android:label="bmkg_inventory_app"
+        android:label="BMKG Inventory"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 

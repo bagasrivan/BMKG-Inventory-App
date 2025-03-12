@@ -1,5 +1,6 @@
 import 'package:bmkg_inventory_system/view/addPage.dart';
 import 'package:flutter/material.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -25,7 +26,7 @@ class _HomeState extends State<HomePage> {
     ];
     return "${now.day} ${months[now.month - 1]} ${now.year}";
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -154,7 +155,9 @@ class _HomeState extends State<HomePage> {
                               'Peminjaman Barang',
                               style: TextStyle(fontSize: 18),
                             ),
-                            Spacer(),
+                            SizedBox(
+                              width: 91,
+                            ),
                             Icon(Icons.keyboard_arrow_right)
                           ],
                         ),
@@ -183,7 +186,7 @@ class _HomeState extends State<HomePage> {
                               style: TextStyle(fontSize: 18),
                             ),
                             SizedBox(
-                              width: 62,
+                              width: 73,
                             ),
                             Icon(Icons.keyboard_arrow_right),
                           ],

@@ -152,7 +152,7 @@ class _InventoryState extends State<InventoryPage> {
 
     return items.where((item) {
       bool matchesCategory =
-          selectedCategory == "Semua Barang" || item['status'] == "Tersedia";
+          selectedCategory == "Semua" || item['status'] == selectedCategory;
       bool matchesSearch = item['name']!.toLowerCase().contains(query);
 
       return matchesCategory && matchesSearch;
