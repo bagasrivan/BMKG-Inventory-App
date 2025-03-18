@@ -42,8 +42,6 @@ class _LoginState extends State<LoginPage> {
       });
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> data = jsonDecode(response.body);
-
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Login berhasil, Selamat datang'),
           backgroundColor: Colors.green,
