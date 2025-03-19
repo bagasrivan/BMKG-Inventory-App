@@ -1,4 +1,5 @@
 import 'package:bmkg_inventory_system/view/addPage.dart';
+import 'package:bmkg_inventory_system/view/returnPage.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
@@ -192,7 +193,12 @@ class _HomeState extends State<HomePage> {
                             Icon(Icons.keyboard_arrow_right),
                           ],
                         ),
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ReturnPage()));
+                        },
                       )
                     ],
                   ),
