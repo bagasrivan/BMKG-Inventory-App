@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 class AddPage extends StatefulWidget {
   const AddPage({super.key});
 
+  @override
   _AddState createState() => _AddState();
 }
 
@@ -21,8 +22,8 @@ class _AddState extends State<AddPage> {
             content: Text("Apakah anda yakin ingin menghapus barang dipinjam?"),
             actions: [
               TextButton(
-                child: Text('Batal'),
                 onPressed: Navigator.of(context).pop,
+                child: Text('Batal'),
               ),
               TextButton(
                 child: Text('Ya'),
@@ -38,6 +39,7 @@ class _AddState extends State<AddPage> {
         });
   }
 
+  @override
   Widget build(BuildContext) {
     return Scaffold(
       appBar: AppBar(
@@ -253,11 +255,6 @@ class _AddState extends State<AddPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ElevatedButton(
-                    child: const Text(
-                      'Selesai',
-                      style:
-                          TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                       foregroundColor: Colors.white,
@@ -269,6 +266,11 @@ class _AddState extends State<AddPage> {
                     onPressed: () {
                       Navigator.pushNamed(context, '/navigation');
                     },
+                    child: const Text(
+                      'Selesai',
+                      style:
+                          TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ],
               ),

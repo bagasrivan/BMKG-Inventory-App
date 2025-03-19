@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 class ChooseItemPage extends StatefulWidget {
   const ChooseItemPage({super.key});
 
+  @override
   _ChooseItemState createState() => _ChooseItemState();
 }
 
@@ -127,8 +128,9 @@ class _ChooseItemState extends State<ChooseItemPage> {
     },
   ];
 
-  TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
 
+  @override
   void initState() {
     super.initState();
     _searchController.addListener(() {
@@ -168,8 +170,8 @@ class _ChooseItemState extends State<ChooseItemPage> {
             content: Text('Apakah anda yakin ingin meminjam $itemName?'),
             actions: [
               TextButton(
-                child: Text('Batal'),
                 onPressed: Navigator.of(context).pop,
+                child: Text('Batal'),
               ),
               TextButton(
                 child: Text('Ya'),
@@ -197,6 +199,7 @@ class _ChooseItemState extends State<ChooseItemPage> {
     }).toList();
   }
 
+  @override
   Widget build(BuildContext) {
     List<Map<String, String>> filteredItems = getFilteredItems();
 
@@ -309,12 +312,6 @@ class _ChooseItemState extends State<ChooseItemPage> {
                                     fontSize: 10),
                               )
                             : ElevatedButton(
-                                child: Text(
-                                  isSelected ? 'Batal' : 'Pilih',
-                                  style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold),
-                                ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.grey.shade50,
                                   foregroundColor: Colors.blue,
@@ -333,6 +330,12 @@ class _ChooseItemState extends State<ChooseItemPage> {
                                           }
                                         });
                                       },
+                                child: Text(
+                                  isSelected ? 'Batal' : 'Pilih',
+                                  style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold),
+                                ),
                               )),
                   );
                 },
@@ -368,10 +371,6 @@ class _ChooseItemState extends State<ChooseItemPage> {
                   ],
                 ),
                 ElevatedButton(
-                  child: Text(
-                    'Selesai',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                  ),
                   onPressed: _onComplete,
                   style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
@@ -381,6 +380,10 @@ class _ChooseItemState extends State<ChooseItemPage> {
                       ),
                       padding:
                           EdgeInsets.symmetric(horizontal: 30, vertical: 10)),
+                  child: Text(
+                    'Selesai',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                  ),
                 ),
               ],
             ),

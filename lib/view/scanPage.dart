@@ -4,6 +4,7 @@ import 'package:qr_code_scanner/qr_code_scanner.dart';
 class ScanPage extends StatefulWidget {
   const ScanPage({super.key});
 
+  @override
   _ScanState createState() => _ScanState();
 }
 
@@ -12,6 +13,7 @@ class _ScanState extends State<ScanPage> {
   QRViewController? controller;
   String scannedData = "";
 
+  @override
   void dispose() {
     controller?.dispose();
     super.dispose();
@@ -27,6 +29,7 @@ class _ScanState extends State<ScanPage> {
     });
   }
 
+  @override
   Widget build(BuildContext) {
     return Scaffold(
       appBar: AppBar(

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 class Navigation extends StatefulWidget {
   const Navigation({super.key});
 
+  @override
   _NavigationState createState() => _NavigationState();
 }
 
@@ -24,6 +25,7 @@ class _NavigationState extends State<Navigation> {
     });
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: _pages[_selectedIndex],

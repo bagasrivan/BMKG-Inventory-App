@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 class InventoryPage extends StatefulWidget {
   const InventoryPage({super.key});
 
+  @override
   _InventoryState createState() => _InventoryState();
 }
 
@@ -126,8 +127,9 @@ class _InventoryState extends State<InventoryPage> {
     },
   ];
 
-  TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
 
+  @override
   void initState() {
     super.initState();
     _searchController.addListener(() {
@@ -159,6 +161,7 @@ class _InventoryState extends State<InventoryPage> {
     }).toList();
   }
 
+  @override
   Widget build(BuildContext context) {
     List<Map<String, String>> filteredItems = getFilteredItems();
 
