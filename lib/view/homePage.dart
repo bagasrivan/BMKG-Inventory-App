@@ -13,7 +13,6 @@ class _HomeState extends State<HomePage> {
   // Definisi warna BMKG yang konsisten dengan login
   static const Color bmkgBlue = Color(0xFF0D47A1);
   static const Color bmkgLightBlue = Color(0xFF1976D2);
-  static const Color bmkgVeryLightBlue = Color(0xFFBBDEFB);
   
   String getFormattedDate() {
     DateTime now = DateTime.now();
@@ -365,57 +364,6 @@ class _HomeState extends State<HomePage> {
             )
           ],
         ),
-      ),
-    );
-  }
-  
-  // Widget untuk membuat item aktivitas
-  Widget _buildActivityItem(
-    String title, 
-    String person, 
-    String time,
-    IconData itemIcon
-  ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: bmkgLightBlue.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(
-              itemIcon,
-              size: 24,
-              color: bmkgLightBlue,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '$person • $time',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }

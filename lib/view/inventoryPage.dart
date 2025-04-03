@@ -12,9 +12,15 @@ class _InventoryState extends State<InventoryPage> {
   // Definisi warna BMKG yang konsisten dengan halaman lain
   static const Color bmkgBlue = Color(0xFF0D47A1);
   static const Color bmkgLightBlue = Color(0xFF1976D2);
-  static const Color bmkgVeryLightBlue = Color(0xFFBBDEFB);
-  
-  List<String> categories = ["Semua", "Tersedia", "Tidak Tersedia", "Peralatan Operasional", "Kendaraan", "Alat Tulis"];
+
+  List<String> categories = [
+    "Semua",
+    "Tersedia",
+    "Tidak Tersedia",
+    "Peralatan Operasional",
+    "Kendaraan",
+    "Alat Tulis"
+  ];
   String selectedCategory = "Semua";
 
   List<Map<String, String>> items = [
@@ -159,16 +165,17 @@ class _InventoryState extends State<InventoryPage> {
 
     return items.where((item) {
       bool matchesCategory;
-      
+
       if (selectedCategory == "Semua") {
         matchesCategory = true;
-      } else if (selectedCategory == "Tersedia" || selectedCategory == "Tidak Tersedia") {
+      } else if (selectedCategory == "Tersedia" ||
+          selectedCategory == "Tidak Tersedia") {
         matchesCategory = item['status'] == selectedCategory;
       } else {
         // Filter by category type
         matchesCategory = item['category']!.contains(selectedCategory);
       }
-      
+
       bool matchesSearch = item['name']!.toLowerCase().contains(query);
 
       return matchesCategory && matchesSearch;
@@ -206,11 +213,11 @@ class _InventoryState extends State<InventoryPage> {
       ],
     );
   }
-  
+
   // Widget untuk filter chip
   Widget _buildFilterChip(String label) {
     bool isSelected = selectedCategory == label;
-    
+
     return FilterChip(
       label: Text(
         label,
@@ -230,7 +237,7 @@ class _InventoryState extends State<InventoryPage> {
       },
     );
   }
-  
+
   // Widget untuk status kosong
   Widget _buildEmptyState() {
     return Center(
@@ -286,7 +293,7 @@ class _InventoryState extends State<InventoryPage> {
       ),
     );
   }
-  
+
   // Widget untuk filter bottom sheet
   Widget _buildFilterBottomSheet() {
     return Container(
@@ -392,7 +399,7 @@ class _InventoryState extends State<InventoryPage> {
       ),
     );
   }
-    
+
   // Function untuk menampilkan detail item
   void _showItemDetails(Map<String, String> item) {
     showModalBottomSheet(
@@ -405,7 +412,7 @@ class _InventoryState extends State<InventoryPage> {
       ),
       builder: (context) {
         bool isAvailable = item['status'] == 'Tersedia';
-        
+
         return Container(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -429,9 +436,9 @@ class _InventoryState extends State<InventoryPage> {
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 20),
-              
+
               // Gambar dan informasi
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -450,9 +457,9 @@ class _InventoryState extends State<InventoryPage> {
                       fit: BoxFit.contain,
                     ),
                   ),
-                  
+
                   const SizedBox(width: 16),
-                  
+
                   // Info
                   Expanded(
                     child: Column(
@@ -486,19 +493,21 @@ class _InventoryState extends State<InventoryPage> {
                           ),
                         ),
                         const SizedBox(height: 12),
-                        _buildInfoRow(Icons.category, 'Kategori', item['category']!),
+                        _buildInfoRow(
+                            Icons.category, 'Kategori', item['category']!),
                         const SizedBox(height: 8),
-                        _buildInfoRow(Icons.location_on, 'Lokasi', item['location']!),
+                        _buildInfoRow(
+                            Icons.location_on, 'Lokasi', item['location']!),
                       ],
                     ),
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 24),
               const Divider(),
               const SizedBox(height: 16),
-              
+
               // Button section
               Row(
                 children: [
@@ -563,7 +572,7 @@ class _InventoryState extends State<InventoryPage> {
       },
     );
   }
-  
+
   @override
   Widget build(BuildContext context) {
     List<Map<String, String>> filteredItems = getFilteredItems();
@@ -577,11 +586,7 @@ class _InventoryState extends State<InventoryPage> {
       }
       return 0;
     });
-    
-    // Get screen size for responsiveness
-    final screenSize = MediaQuery.of(context).size;
-    final bool isSmallScreen = screenSize.width < 600;
-    
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -596,9 +601,7 @@ class _InventoryState extends State<InventoryPage> {
         foregroundColor: Colors.white,
         elevation: 0,
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-            bottom: Radius.circular(20)
-          ),
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
         ),
         actions: [
           IconButton(
@@ -679,14 +682,15 @@ class _InventoryState extends State<InventoryPage> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
-                        borderSide: const BorderSide(color: Colors.white, width: 2),
+                        borderSide:
+                            const BorderSide(color: Colors.white, width: 2),
                       ),
                     ),
                     style: const TextStyle(fontSize: 16),
                   ),
-                  
+
                   const SizedBox(height: 12),
-                  
+
                   // Category Chips
                   SizedBox(
                     height: 40,
@@ -700,8 +704,12 @@ class _InventoryState extends State<InventoryPage> {
                             label: Text(
                               category,
                               style: TextStyle(
-                                color: isSelected ? Colors.white : Colors.grey[800],
-                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                color: isSelected
+                                    ? Colors.white
+                                    : Colors.grey[800],
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
                               ),
                             ),
                             selected: isSelected,
@@ -710,11 +718,14 @@ class _InventoryState extends State<InventoryPage> {
                             selectedColor: bmkgLightBlue,
                             elevation: 0,
                             shadowColor: Colors.transparent,
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
                               side: BorderSide(
-                                color: isSelected ? Colors.transparent : Colors.grey.shade300,
+                                color: isSelected
+                                    ? Colors.transparent
+                                    : Colors.grey.shade300,
                                 width: 1,
                               ),
                             ),
@@ -731,7 +742,7 @@ class _InventoryState extends State<InventoryPage> {
                 ],
               ),
             ),
-            
+
             // Results Count
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -777,7 +788,7 @@ class _InventoryState extends State<InventoryPage> {
                 ],
               ),
             ),
-            
+
             // Item List
             Expanded(
               child: filteredItems.isEmpty
@@ -789,7 +800,7 @@ class _InventoryState extends State<InventoryPage> {
                       itemBuilder: (context, index) {
                         var item = filteredItems[index];
                         bool isAvailable = item['status'] == 'Tersedia';
-                        
+
                         return Card(
                           margin: const EdgeInsets.only(bottom: 12),
                           elevation: 2,
@@ -815,7 +826,8 @@ class _InventoryState extends State<InventoryPage> {
                                         height: 70,
                                         decoration: BoxDecoration(
                                           color: Colors.grey.shade100,
-                                          borderRadius: BorderRadius.circular(12),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
                                         ),
                                         padding: const EdgeInsets.all(10),
                                         child: Image.asset(
@@ -829,7 +841,9 @@ class _InventoryState extends State<InventoryPage> {
                                         child: Container(
                                           padding: const EdgeInsets.all(4),
                                           decoration: BoxDecoration(
-                                            color: isAvailable ? Colors.green : Colors.red,
+                                            color: isAvailable
+                                                ? Colors.green
+                                                : Colors.red,
                                             shape: BoxShape.circle,
                                             border: Border.all(
                                               color: Colors.white,
@@ -842,16 +856,18 @@ class _InventoryState extends State<InventoryPage> {
                                       ),
                                     ],
                                   ),
-                                  
+
                                   const SizedBox(width: 16),
-                                  
+
                                   // Item Details
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
                                           children: [
                                             // Item Name
                                             Expanded(
@@ -865,23 +881,29 @@ class _InventoryState extends State<InventoryPage> {
                                                 overflow: TextOverflow.ellipsis,
                                               ),
                                             ),
-                                            
+
                                             // Status Badge
                                             Container(
-                                              padding: const EdgeInsets.symmetric(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
                                                 horizontal: 8,
                                                 vertical: 4,
                                               ),
                                               decoration: BoxDecoration(
-                                                color: isAvailable 
-                                                    ? Colors.green.withOpacity(0.1)
-                                                    : Colors.red.withOpacity(0.1),
-                                                borderRadius: BorderRadius.circular(8),
+                                                color: isAvailable
+                                                    ? Colors.green
+                                                        .withOpacity(0.1)
+                                                    : Colors.red
+                                                        .withOpacity(0.1),
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
                                               ),
                                               child: Text(
                                                 item['status']!,
                                                 style: TextStyle(
-                                                  color: isAvailable ? Colors.green : Colors.red,
+                                                  color: isAvailable
+                                                      ? Colors.green
+                                                      : Colors.red,
                                                   fontSize: 12,
                                                   fontWeight: FontWeight.w500,
                                                 ),
@@ -889,9 +911,9 @@ class _InventoryState extends State<InventoryPage> {
                                             ),
                                           ],
                                         ),
-                                        
+
                                         const SizedBox(height: 8),
-                                        
+
                                         // Category
                                         Row(
                                           children: [
@@ -912,9 +934,9 @@ class _InventoryState extends State<InventoryPage> {
                                             ),
                                           ],
                                         ),
-                                        
+
                                         const SizedBox(height: 4),
-                                        
+
                                         // Location
                                         Row(
                                           children: [
@@ -938,7 +960,7 @@ class _InventoryState extends State<InventoryPage> {
                                       ],
                                     ),
                                   ),
-                                  
+
                                   // Arrow Icon
                                   Icon(
                                     Icons.arrow_forward_ios,
@@ -958,7 +980,7 @@ class _InventoryState extends State<InventoryPage> {
       ),
     );
   }
-  
+
   @override
   void dispose() {
     _searchController.dispose();

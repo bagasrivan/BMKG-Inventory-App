@@ -12,7 +12,6 @@ class _AddState extends State<AddPage> {
   // Definisi warna BMKG yang konsisten dengan halaman lain
   static const Color bmkgBlue = Color(0xFF0D47A1);
   static const Color bmkgLightBlue = Color(0xFF1976D2);
-  static const Color bmkgVeryLightBlue = Color(0xFFBBDEFB);
   
   String? selectedLocation;
   final TextEditingController _userController = TextEditingController();
@@ -237,10 +236,6 @@ class _AddState extends State<AddPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Get screen size untuk responsif
-    final screenSize = MediaQuery.of(context).size;
-    final bool isSmallScreen = screenSize.width < 600;
-    
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(

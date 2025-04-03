@@ -11,7 +11,6 @@ class _ProfileState extends State<ProfilePage> {
   // Definisi warna BMKG yang konsisten dengan halaman lain
   static const Color bmkgBlue = Color(0xFF0D47A1);
   static const Color bmkgLightBlue = Color(0xFF1976D2);
-  static const Color bmkgVeryLightBlue = Color(0xFFBBDEFB);
 
   // Data profil pengguna
   final Map<String, String> _userData = {

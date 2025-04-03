@@ -16,8 +16,6 @@ class _NavigationState extends State<Navigation> {
 
   // Definisi warna BMKG yang konsisten dengan halaman lain
   static const Color bmkgBlue = Color(0xFF0D47A1);
-  static const Color bmkgLightBlue = Color(0xFF1976D2);
-  static const Color bmkgVeryLightBlue = Color(0xFFBBDEFB);
 
   final List<Widget> _pages = [
     const HomePage(),
