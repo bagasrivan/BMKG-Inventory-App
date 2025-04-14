@@ -2,6 +2,9 @@ import 'package:bmkg_inventory_system/view/addPage.dart';
 import 'package:bmkg_inventory_system/view/returnPage.dart';
 import 'package:bmkg_inventory_system/view/takePage.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'dart:async';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -15,21 +18,87 @@ class _HomeState extends State<HomePage> {
   static const Color bmkgBlue = Color(0xFF0D47A1);
   static const Color bmkgLightBlue = Color(0xFF1976D2);
 
+  // Variabel untuk menyimpan statistik barang
+  int totalBarang = 0;
+  int barangTersedia = 0;
+  int barangDipinjam = 0;
+
+  // Timer untuk refresh berkala
+  Timer? _refreshTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Panggil fungsi untuk mengambil data barang saat halaman dimuat
+    fetchBarangData();
+
+    // Atur timer untuk refresh setiap 30 detik
+    _refreshTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      fetchBarangData();
+    });
+  }
+
+  @override
+  void dispose() {
+    // Batalkan timer saat widget di-dispose
+    _refreshTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> fetchBarangData() async {
+    try {
+      final response = await http.get(
+        Uri.parse('http://api-bmkg.athaland.my.id/api/barang'),
+      );
+
+      if (response.statusCode == 200) {
+        // Parse JSON response
+        List<dynamic> barangList = json.decode(response.body);
+
+        // Cek apakah widget masih ada sebelum setState
+        if (mounted) {
+          setState(() {
+            // Hitung total barang
+            totalBarang = barangList.length;
+
+            // Hitung barang tersedia
+            barangTersedia = barangList.where((barang) => 
+                barang['status'] == 'tersedia').length;
+
+            // Hitung barang dipinjam (diasumsikan status selain 'tersedia' adalah dipinjam)
+            barangDipinjam = barangList.where((barang) => 
+                barang['status'] != 'tersedia').length;
+          });
+        }
+      } else {
+        // Tangani error
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Gagal memuat data: ${response.statusCode}'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      // Tangani error koneksi
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error koneksi: $e'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
   String getFormattedDate() {
     DateTime now = DateTime.now();
     List<String> months = [
-      "Januari",
-      "Februari",
-      "Maret",
-      "April",
-      "Mei",
-      "Juni",
-      "Juli",
-      "Agustus",
-      "September",
-      "Oktober",
-      "November",
-      "Desember"
+      "Januari", "Februari", "Maret", "April", "Mei", "Juni", 
+      "Juli", "Agustus", "September", "Oktober", "November", "Desember"
     ];
     return "${now.day} ${months[now.month - 1]} ${now.year}";
   }
@@ -167,19 +236,19 @@ class _HomeState extends State<HomePage> {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           _buildStatCard(
-                            '12',
+                            '$totalBarang',
                             'Total\nBarang',
                             Icons.inventory,
                             Colors.white,
                           ),
                           _buildStatCard(
-                            '8',
+                            '$barangTersedia',
                             'Barang\nTersedia',
                             Icons.check_circle,
                             Colors.white,
                           ),
                           _buildStatCard(
-                            '4',
+                            '$barangDipinjam',
                             'Barang\nDipinjam',
                             Icons.pending_actions,
                             Colors.white,
@@ -192,7 +261,7 @@ class _HomeState extends State<HomePage> {
 
                 const SizedBox(height: 24),
 
-                // Kelola Inventory
+                // Kelola Inventory (sama seperti sebelumnya)
                 Card(
                   elevation: 6,
                   shape: RoundedRectangleBorder(

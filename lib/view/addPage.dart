@@ -142,7 +142,7 @@ class _AddState extends State<AddPage> {
                 ),
                 _buildConfirmationInfoRow(
                   label: "Tanggal Pinjam",
-                  value: _formatTanggal(selectedDate),
+                  value: _formatTanggal(DateTime.now()),
                 ),
                 const SizedBox(height: 8),
                 const Text(
@@ -460,64 +460,29 @@ class _AddState extends State<AddPage> {
 
                             const SizedBox(height: 20),
 
-                            // Tanggal Pinjam
+                            // Tanggal Pinjam (STATIC - MODIFIED)
                             _buildFormLabel("Tanggal Peminjaman"),
                             const SizedBox(height: 8),
-                            InkWell(
-                              onTap: () async {
-                                DateTime now = DateTime.now();
-                                DateTime? pickedDate = await showDatePicker(
-                                  context: context,
-                                  initialDate:
-                                      now, // Default ke tanggal hari ini
-                                  firstDate:
-                                      now, // Tidak bisa memilih tanggal yang sudah lewat
-                                  lastDate: DateTime(now.year +
-                                      1), // Maksimal setahun ke depan
-                                  builder: (context, child) {
-                                    return Theme(
-                                      data: Theme.of(context).copyWith(
-                                        colorScheme: const ColorScheme.light(
-                                          primary: bmkgBlue,
-                                          onPrimary: Colors.white,
-                                          onSurface: Colors.black,
-                                        ),
-                                      ),
-                                      child: child!,
-                                    );
-                                  },
-                                );
-                                if (pickedDate != null) {
-                                  setState(() {
-                                    selectedDate = pickedDate;
-                                  });
-                                }
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 14),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(12),
-                                  border:
-                                      Border.all(color: Colors.grey.shade300),
-                                  color: Colors.white,
-                                ),
-                                child: Row(
-                                  children: [
-                                    const Icon(Icons.calendar_today,
-                                        color: bmkgBlue),
-                                    const SizedBox(width: 12),
-                                    Text(
-                                      _formatTanggal(selectedDate),
-                                      style: const TextStyle(
-                                        fontSize: 15,
-                                      ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 14),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.grey.shade300),
+                                color: Colors.grey.shade50, // Background abu-abu muda untuk menunjukkan field tidak aktif
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.calendar_today,
+                                      color: bmkgBlue),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    _formatTanggal(DateTime.now()),
+                                    style: const TextStyle(
+                                      fontSize: 15,
                                     ),
-                                    const Spacer(),
-                                    const Icon(Icons.arrow_drop_down,
-                                        color: Colors.grey),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
                             ),
 

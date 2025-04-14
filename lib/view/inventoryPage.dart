@@ -47,7 +47,6 @@ class InventoryPage extends StatefulWidget {
 class _InventoryState extends State<InventoryPage> {
   // Definisi warna BMKG yang konsisten dengan halaman lain
   static const Color bmkgBlue = Color(0xFF0D47A1);
-  static const Color bmkgLightBlue = Color(0xFF1976D2);
 
   List<String> categories = [
     "Semua",
