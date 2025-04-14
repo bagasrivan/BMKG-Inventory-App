@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:bmkg_inventory_system/controller/navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -62,24 +62,34 @@ class _LoginState extends State<LoginPage> {
       });
 
       if (response.statusCode == 200) {
+        // Parse data dari response
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+
+        // Simpan data pengguna di SharedPreferences
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('username',
+            responseData['user']['name'] ?? _usernameController.text);
+        await prefs.setString(
+            'role', responseData['user']['role'] ?? 'Pengguna');
+        await prefs.setString('token', responseData['token'] ?? '');
+
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: const Row(
+          content: Row(
             children: [
-              Icon(Icons.check_circle, color: Colors.white),
-              SizedBox(width: 10),
-              Text('Login berhasil, Selamat datang'),
+              const Icon(Icons.check_circle, color: Colors.white),
+              const SizedBox(width: 10),
+              Text('Selamat datang, ${responseData['user']['name'] ?? ''}'),
             ],
           ),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           margin: const EdgeInsets.all(10),
         ));
 
-        Navigator.pushReplacement(
-          context, 
-          MaterialPageRoute(builder: (context) => const Navigation())
-        );
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) => const Navigation()));
       } else {
         final Map<String, dynamic> data = jsonDecode(response.body);
         setState(() {
@@ -96,7 +106,8 @@ class _LoginState extends State<LoginPage> {
           ),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           margin: const EdgeInsets.all(10),
         ));
       }
@@ -111,7 +122,8 @@ class _LoginState extends State<LoginPage> {
           children: [
             Icon(Icons.wifi_off, color: Colors.white),
             SizedBox(width: 10),
-            Expanded(child: Text('Koneksi error, periksa koneksi internet anda')),
+            Expanded(
+                child: Text('Koneksi error, periksa koneksi internet anda')),
           ],
         ),
         backgroundColor: Colors.red,
@@ -119,7 +131,7 @@ class _LoginState extends State<LoginPage> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         margin: const EdgeInsets.all(10),
       ));
-      
+
       // Print error for debugging
       print('Login error: $e');
     }
@@ -130,13 +142,14 @@ class _LoginState extends State<LoginPage> {
     // Dapatkan ukuran layar untuk responsif
     final screenSize = MediaQuery.of(context).size;
     final bool isSmallScreen = screenSize.width < 600;
-    
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
             child: Container(
               constraints: const BoxConstraints(
                 maxWidth: 500, // Batasi lebar maksimum untuk layar besar
@@ -169,10 +182,11 @@ class _LoginState extends State<LoginPage> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Judul aplikasi dengan desain menarik
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         colors: [bmkgBlue, bmkgLightBlue],
@@ -200,7 +214,7 @@ class _LoginState extends State<LoginPage> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  
+
                   // Gambar ilustrasi
                   Container(
                     decoration: BoxDecoration(
@@ -225,7 +239,7 @@ class _LoginState extends State<LoginPage> {
                     ),
                   ),
                   const SizedBox(height: 25),
-                  
+
                   // Form Login dengan efek shadow
                   Container(
                     padding: const EdgeInsets.all(20),
@@ -250,7 +264,7 @@ class _LoginState extends State<LoginPage> {
                           decoration: InputDecoration(
                             labelText: 'Username',
                             labelStyle: TextStyle(
-                              fontSize: 15, 
+                              fontSize: 15,
                               color: bmkgBlue.withOpacity(0.7),
                             ),
                             hintText: 'Masukkan username anda',
@@ -263,7 +277,7 @@ class _LoginState extends State<LoginPage> {
                               color: bmkgBlue,
                             ),
                             contentPadding: const EdgeInsets.symmetric(
-                              vertical: 15, 
+                              vertical: 15,
                               horizontal: 20,
                             ),
                             border: OutlineInputBorder(
@@ -272,7 +286,8 @@ class _LoginState extends State<LoginPage> {
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(15),
-                              borderSide: BorderSide(color: Colors.grey.shade300),
+                              borderSide:
+                                  BorderSide(color: Colors.grey.shade300),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(15),
@@ -286,7 +301,7 @@ class _LoginState extends State<LoginPage> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        
+
                         // Password field
                         TextField(
                           controller: _passwordController,
@@ -295,7 +310,7 @@ class _LoginState extends State<LoginPage> {
                           decoration: InputDecoration(
                             labelText: 'Password',
                             labelStyle: TextStyle(
-                              fontSize: 15, 
+                              fontSize: 15,
                               color: bmkgBlue.withOpacity(0.7),
                             ),
                             hintText: 'Masukkan password anda',
@@ -308,7 +323,7 @@ class _LoginState extends State<LoginPage> {
                               color: bmkgBlue,
                             ),
                             contentPadding: const EdgeInsets.symmetric(
-                              vertical: 15, 
+                              vertical: 15,
                               horizontal: 20,
                             ),
                             border: OutlineInputBorder(
@@ -317,7 +332,8 @@ class _LoginState extends State<LoginPage> {
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(15),
-                              borderSide: BorderSide(color: Colors.grey.shade300),
+                              borderSide:
+                                  BorderSide(color: Colors.grey.shade300),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(15),
@@ -348,7 +364,7 @@ class _LoginState extends State<LoginPage> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  
+
                   // Tombol Login dengan efek gradien
                   SizedBox(
                     width: double.infinity,
@@ -366,7 +382,7 @@ class _LoginState extends State<LoginPage> {
                       ),
                       child: Ink(
                         decoration: BoxDecoration(
-                          gradient: _isLoading 
+                          gradient: _isLoading
                               ? LinearGradient(
                                   colors: [
                                     Colors.grey.shade400,
@@ -425,7 +441,7 @@ class _LoginState extends State<LoginPage> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Tombol Exit dengan efek gradien
                   SizedBox(
                     width: double.infinity,
@@ -436,7 +452,8 @@ class _LoginState extends State<LoginPage> {
                           context: context,
                           builder: (context) => AlertDialog(
                             title: const Text('Konfirmasi'),
-                            content: const Text('Apakah Anda yakin ingin keluar dari aplikasi?'),
+                            content: const Text(
+                                'Apakah Anda yakin ingin keluar dari aplikasi?'),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(15),
                             ),
@@ -521,7 +538,7 @@ class _LoginState extends State<LoginPage> {
                       ),
                     ),
                   ),
-                  
+
                   // Footer
                   Padding(
                     padding: const EdgeInsets.only(top: 24.0),

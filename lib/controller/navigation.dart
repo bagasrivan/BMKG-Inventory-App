@@ -2,6 +2,8 @@ import 'package:bmkg_inventory_system/view/addPage.dart';
 import 'package:bmkg_inventory_system/view/homePage.dart';
 import 'package:bmkg_inventory_system/view/inventoryPage.dart';
 import 'package:bmkg_inventory_system/view/profilePage.dart';
+import 'package:bmkg_inventory_system/view/returnPage.dart';
+import 'package:bmkg_inventory_system/view/scanPage.dart';
 import 'package:flutter/material.dart';
 
 class Navigation extends StatefulWidget {
@@ -185,16 +187,20 @@ class _NavigationState extends State<Navigation> {
                 icon: Icons.assignment_return,
                 label: 'Pengembalian Barang',
                 onTap: () {
-                  Navigator.pop(context);
-                  // Navigasi ke halaman pengembalian
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const ReturnPage()));
                 },
               ),
               _buildQuickActionButton(
                 icon: Icons.qr_code_scanner,
                 label: 'Scan Kode QR',
                 onTap: () {
-                  Navigator.pop(context);
-                  // Navigasi ke halaman scan
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const ScanPage()));
                 },
               ),
             ],

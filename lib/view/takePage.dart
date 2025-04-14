@@ -71,10 +71,7 @@ class _TakeState extends State<TakePage> {
   final List<String> locations = [
     "Operasional",
     "Tata Usaha",
-    "Radar",
-    "Meteorologi",
-    "Klimatologi",
-    "Geofisika"
+    "Radar"
   ];
 
   // Daftar ATK yang tersedia (dummy data, nantinya bisa dari database)
