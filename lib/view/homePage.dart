@@ -1,5 +1,6 @@
 import 'package:bmkg_inventory_system/view/addPage.dart';
 import 'package:bmkg_inventory_system/view/returnPage.dart';
+import 'package:bmkg_inventory_system/view/takePage.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
@@ -13,12 +14,22 @@ class _HomeState extends State<HomePage> {
   // Definisi warna BMKG yang konsisten dengan login
   static const Color bmkgBlue = Color(0xFF0D47A1);
   static const Color bmkgLightBlue = Color(0xFF1976D2);
-  
+
   String getFormattedDate() {
     DateTime now = DateTime.now();
     List<String> months = [
-      "Januari", "Februari", "Maret", "April", "Mei", "Juni", 
-      "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+      "Januari",
+      "Februari",
+      "Maret",
+      "April",
+      "Mei",
+      "Juni",
+      "Juli",
+      "Agustus",
+      "September",
+      "Oktober",
+      "November",
+      "Desember"
     ];
     return "${now.day} ${months[now.month - 1]} ${now.year}";
   }
@@ -36,7 +47,7 @@ class _HomeState extends State<HomePage> {
     // Dapatkan ukuran layar untuk responsif
     final screenSize = MediaQuery.of(context).size;
     final bool isSmallScreen = screenSize.width < 600;
-    
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -52,9 +63,7 @@ class _HomeState extends State<HomePage> {
         foregroundColor: Colors.white,
         elevation: 0,
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-            bottom: Radius.circular(20)
-          ),
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
         ),
         actions: [
           IconButton(
@@ -104,7 +113,7 @@ class _HomeState extends State<HomePage> {
                     ],
                   ),
                 ),
-                
+
                 // Dashboard Summary dengan shadow dan gradien
                 Container(
                   padding: EdgeInsets.all(isSmallScreen ? 20 : 24),
@@ -130,9 +139,7 @@ class _HomeState extends State<HomePage> {
                       // Tanggal dengan desain yang lebih modern
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 12, 
-                          vertical: 8
-                        ),
+                            horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(30),
@@ -140,45 +147,41 @@ class _HomeState extends State<HomePage> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(
-                              Icons.calendar_today, 
-                              size: 16, 
-                              color: Colors.white
-                            ),
+                            const Icon(Icons.calendar_today,
+                                size: 16, color: Colors.white),
                             const SizedBox(width: 8),
                             Text(
                               getFormattedDate(),
                               style: const TextStyle(
-                                fontSize: 14, 
-                                color: Colors.white,
-                                fontWeight: FontWeight.w500
-                              ),
+                                  fontSize: 14,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w500),
                             ),
                           ],
                         ),
                       ),
                       const SizedBox(height: 20),
-                      
+
                       // Statistik dengan desain card
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           _buildStatCard(
-                            '12', 
-                            'Total\nBarang', 
-                            Icons.inventory, 
+                            '12',
+                            'Total\nBarang',
+                            Icons.inventory,
                             Colors.white,
                           ),
                           _buildStatCard(
-                            '8', 
-                            'Barang\nTersedia', 
-                            Icons.check_circle, 
+                            '8',
+                            'Barang\nTersedia',
+                            Icons.check_circle,
                             Colors.white,
                           ),
                           _buildStatCard(
-                            '4', 
-                            'Barang\nDipinjam', 
-                            Icons.pending_actions, 
+                            '4',
+                            'Barang\nDipinjam',
+                            Icons.pending_actions,
                             Colors.white,
                           ),
                         ],
@@ -186,15 +189,14 @@ class _HomeState extends State<HomePage> {
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Kelola Inventory
                 Card(
                   elevation: 6,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20)
-                  ),
+                      borderRadius: BorderRadius.circular(20)),
                   shadowColor: Colors.grey.withOpacity(0.4),
                   child: Padding(
                     padding: const EdgeInsets.all(20),
@@ -228,43 +230,58 @@ class _HomeState extends State<HomePage> {
                             ),
                           ],
                         ),
-                        
+
                         const SizedBox(height: 20),
                         const Divider(),
                         const SizedBox(height: 5),
-                        
+
                         // Menu Peminjaman
                         _buildMenuButton(
                           icon: Icons.assignment_add,
                           title: 'Peminjaman Barang',
                           onTap: () {
                             Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const AddPage())
-                            );
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const AddPage()));
                           },
                         ),
-                        
+
                         const SizedBox(height: 5),
                         const Divider(),
                         const SizedBox(height: 5),
-                        
+
+                        _buildMenuButton(
+                          icon: Icons.edit_note,
+                          title: 'Pengambilan ATK',
+                          onTap: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const TakePage()));
+                          },
+                        ),
+
+                        const SizedBox(height: 5),
+                        const Divider(),
+                        const SizedBox(height: 5),
+
                         // Menu Pengembalian
                         _buildMenuButton(
                           icon: Icons.assignment_return,
                           title: 'Pengembalian Barang',
                           onTap: () {
                             Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const ReturnPage())
-                            );
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const ReturnPage()));
                           },
                         ),
                       ],
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 24),
 
                 // Footer
@@ -287,9 +304,10 @@ class _HomeState extends State<HomePage> {
       ),
     );
   }
-  
+
   // Widget untuk membuat card statistik
-  Widget _buildStatCard(String value, String label, IconData icon, Color color) {
+  Widget _buildStatCard(
+      String value, String label, IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -322,13 +340,12 @@ class _HomeState extends State<HomePage> {
       ),
     );
   }
-  
+
   // Widget untuk membuat tombol menu
-  Widget _buildMenuButton({
-    required IconData icon, 
-    required String title, 
-    required VoidCallback onTap
-  }) {
+  Widget _buildMenuButton(
+      {required IconData icon,
+      required String title,
+      required VoidCallback onTap}) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),

@@ -15,7 +15,7 @@ class _ProfileState extends State<ProfilePage> {
   // Data profil pengguna
   final Map<String, String> _userData = {
     'name': 'Bagaskara',
-    'role': 'Developer yang Ganteng',
+    'role': 'Admin',
   };
 
   @override
