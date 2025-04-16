@@ -59,22 +59,21 @@ class InventoryItem {
   }
 }
 
-class ChooseItemPage extends StatefulWidget {
-  const ChooseItemPage({super.key});
+class ChooseTakePage extends StatefulWidget {
+  const ChooseTakePage({super.key});
 
   @override
-  _ChooseItemState createState() => _ChooseItemState();
+  _ChooseTakeState createState() => _ChooseTakeState();
 }
 
-class _ChooseItemState extends State<ChooseItemPage> {
+class _ChooseTakeState extends State<ChooseTakePage> {
   // Definisi warna BMKG yang konsisten dengan halaman lain
   static const Color bmkgBlue = Color(0xFF0D47A1);
   static const Color bmkgLightBlue = Color(0xFF1976D2);
 
   List<String> categories = ["Tersedia", "Semua Barang"];
   String selectedCategory = "Tersedia";
-  List<Map<String, dynamic>> selectedItems =
-      []; // Ubah ke List<Map> untuk menyimpan id dan nama barang
+  List<Map<String, dynamic>> selectedItems = []; // Simpan id dan nama barang
 
   List<InventoryItem> items = [];
   List<InventoryItem> filteredItems = [];
@@ -95,8 +94,6 @@ class _ChooseItemState extends State<ChooseItemPage> {
     _searchController.dispose();
     super.dispose();
   }
-
-  // Perbaikan fungsi _fetchInventoryItems() pada ChooseItemPage
 
   Future<void> _fetchInventoryItems() async {
     setState(() {
@@ -226,12 +223,13 @@ class _ChooseItemState extends State<ChooseItemPage> {
   }
 
   void _confirmSelection(InventoryItem item) {
+    // Dialog untuk konfirmasi pengambilan
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Konfirmasi Peminjaman Barang'),
-          content: Text('Apakah anda yakin ingin meminjam ${item.nama}?'),
+          title: const Text('Konfirmasi Pengambilan Barang'),
+          content: Text('Apakah anda yakin ingin mengambil ${item.nama}?'),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -300,7 +298,7 @@ class _ChooseItemState extends State<ChooseItemPage> {
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: const Text(
-          'Pilih Barang',
+          'Pilih Barang ATK',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 20,
@@ -378,7 +376,7 @@ class _ChooseItemState extends State<ChooseItemPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: const [
                                     Text(
-                                      'Pilih Barang',
+                                      'Pilih Barang ATK',
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
@@ -387,7 +385,7 @@ class _ChooseItemState extends State<ChooseItemPage> {
                                     ),
                                     SizedBox(height: 4),
                                     Text(
-                                      'Pilih barang yang akan dipinjam',
+                                      'Pilih barang ATK yang akan diambil',
                                       style: TextStyle(
                                         fontSize: 13,
                                         color: Colors.grey,

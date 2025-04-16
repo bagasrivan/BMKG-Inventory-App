@@ -72,6 +72,7 @@ class _LoginState extends State<LoginPage> {
         await prefs.setString(
             'role', responseData['user']['role'] ?? 'Pengguna');
         await prefs.setString('token', responseData['token'] ?? '');
+        await prefs.setInt('user_id', responseData['user']['id'] ?? 0);
 
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Row(
