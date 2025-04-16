@@ -1,9 +1,10 @@
 import 'dart:math';
-
+import 'package:bmkg_inventory_system/view/cartProvider.dart';
 import 'package:bmkg_inventory_system/view/scanPage.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:provider/provider.dart';
 
 class InventoryItem {
   final int id;
@@ -106,7 +107,7 @@ class _ChooseItemState extends State<ChooseItemPage> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://api-bmkg.athaland.my.id/api/barang'),
+        Uri.parse('http://api-bmkg.athaland.my.id/api/barang/pinjam'),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -196,19 +197,53 @@ class _ChooseItemState extends State<ChooseItemPage> {
   }
 
   void _scanBarcode() async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const ScanPage()),
-    );
-    if (result != null) {
-      setState(() {
-        _searchController.text = result;
-      });
+    try {
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const ScanPage()),
+      );
+
+      print('Scanning result: $result'); // Debug print
+
+      if (result != null) {
+        // Cari barang berdasarkan QR/barcode
+        final matchingItems = items.where((item) => item.qr == result).toList();
+
+        print('Matching items: ${matchingItems.length}'); // Debug print
+
+        if (matchingItems.isNotEmpty) {
+          InventoryItem scannedItem = matchingItems.first;
+
+          // Periksa status barang sebelum konfirmasi
+          if (scannedItem.status.toLowerCase() == 'tersedia') {
+            _confirmSelection(scannedItem);
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text('Barang ${scannedItem.nama} tidak tersedia'),
+              backgroundColor: Colors.orange,
+            ));
+          }
+        } else {
+          // Tampilkan dialog jika barang tidak ditemukan
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Barang dengan barcode $result tidak ditemukan'),
+            backgroundColor: Colors.red,
+          ));
+        }
+      }
+    } catch (e) {
+      print('Error in scanning: $e'); // Error logging
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Terjadi kesalahan: $e'),
+        backgroundColor: Colors.red,
+      ));
     }
   }
 
   void _onComplete() {
-    if (selectedItems.isEmpty) {
+    final cartProvider = Provider.of<CartProvider>(context, listen: false);
+
+    if (cartProvider.items.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Silahkan pilih minimal satu barang'),
@@ -221,51 +256,63 @@ class _ChooseItemState extends State<ChooseItemPage> {
         ),
       );
     } else {
-      Navigator.pop(context, selectedItems);
+      // Kirim data barang yang dipilih
+      Navigator.pop(context, cartProvider.items);
     }
   }
 
   void _confirmSelection(InventoryItem item) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Konfirmasi Peminjaman Barang'),
-          content: Text('Apakah anda yakin ingin meminjam ${item.nama}?'),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text(
-                'Batal',
-                style: TextStyle(color: bmkgBlue),
-              ),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: bmkgBlue,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+    try {
+      final cartProvider = Provider.of<CartProvider>(context, listen: false);
+
+      print('Attempting to add item: ${item.nama}'); // Debug print
+
+      // Cek apakah barang bisa ditambahkan
+      if (cartProvider.canAddItem()) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Konfirmasi Pengambilan Barang'),
+              content: Text('Apakah anda yakin ingin mengambil ${item.nama}?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Batal'),
                 ),
-              ),
-              onPressed: () {
-                setState(() {
-                  // Tambahkan barang ke daftar yang dipilih
-                  selectedItems.add({
-                    'id': item.id,
-                    'nama': item.nama,
-                  });
-                });
-                Navigator.of(context).pop();
-              },
-              child: const Text('Ya'),
-            ),
-          ],
+                ElevatedButton(
+                  onPressed: () {
+                    // Tambahkan barang ke keranjang
+                    cartProvider.addItem({
+                      'id': item.id,
+                      'nama': item.nama,
+                    });
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Ya'),
+                ),
+              ],
+            );
+          },
         );
-      },
-    );
+      } else {
+        // Tampilkan pesan jika keranjang penuh
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Keranjang sudah penuh. Maksimal 10 barang.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error in confirm selection: $e'); // Error logging
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Terjadi kesalahan: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _filterItems() {

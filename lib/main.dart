@@ -2,10 +2,20 @@ import 'package:bmkg_inventory_system/controller/splash.dart';
 import 'package:bmkg_inventory_system/view/loginPage.dart';
 import 'package:bmkg_inventory_system/controller/navigation.dart';
 import 'package:bmkg_inventory_system/view/homePage.dart';
+import 'package:bmkg_inventory_system/view/cartProvider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const InventoryApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => CartProvider()),
+        // Tambahkan provider lain jika diperlukan di masa mendatang
+      ],
+      child: const InventoryApp(),
+    ),
+  );
 }
 
 class InventoryApp extends StatelessWidget {

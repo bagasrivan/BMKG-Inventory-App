@@ -1,5 +1,7 @@
+import 'package:bmkg_inventory_system/view/cartProvider.dart';
 import 'package:bmkg_inventory_system/view/chooseItemPage.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -47,6 +49,9 @@ class _AddState extends State<AddPage> {
   @override
   void initState() {
     super.initState();
+    // Inisialisasi dengan barang dari provider
+    final cartProvider = Provider.of<CartProvider>(context, listen: false);
+    selectedItems = cartProvider.items;
     _loadUserData();
 
     // Simulasi loading data
@@ -86,44 +91,76 @@ class _AddState extends State<AddPage> {
   }
 
   // Dialog konfirmasi hapus item
+  // Dialog konfirmasi hapus item
   void _confirmDelete(Map<String, dynamic> item) {
+    final cartProvider = Provider.of<CartProvider>(context, listen: false);
+
     showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Konfirmasi Hapus Barang'),
-            content: const Text(
-                "Apakah Anda yakin ingin menghapus barang ini dari daftar peminjaman?"),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Konfirmasi Hapus Barang'),
+          content: const Text(
+              "Apakah Anda yakin ingin menghapus barang ini dari daftar peminjaman?"),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text(
+                'Batal',
+                style: TextStyle(color: bmkgBlue),
+              ),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text(
-                  'Batal',
-                  style: TextStyle(color: bmkgBlue),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                onPressed: () {
-                  setState(() {
-                    selectedItems.remove(item);
-                    _validateForm();
-                  });
-                  Navigator.of(context).pop();
-                },
-                child: const Text('Hapus'),
-              ),
-            ],
-          );
-        });
+              onPressed: () {
+                // Gunakan provider untuk menghapus item
+                cartProvider.removeItem(item['id']);
+
+                // Update state
+                setState(() {
+                  selectedItems = cartProvider.items;
+                  _validateForm();
+                });
+
+                Navigator.of(context).pop();
+              },
+              child: const Text('Hapus'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+// Modifikasi tombol pilih barang
+  void _navigateToChooseItems() async {
+    final cartProvider = Provider.of<CartProvider>(context, listen: false);
+
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ChooseItemPage()),
+    );
+
+    if (result != null) {
+      // Tambahkan barang ke provider
+      for (var item in result) {
+        cartProvider.addItem(item);
+      }
+
+      // Update state dengan item dari provider
+      setState(() {
+        selectedItems = cartProvider.items;
+        _validateForm();
+      });
+    }
   }
 
   // Dialog konfirmasi submit

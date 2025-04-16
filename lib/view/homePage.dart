@@ -2,6 +2,7 @@ import 'package:bmkg_inventory_system/view/addPage.dart';
 import 'package:bmkg_inventory_system/view/returnPage.dart';
 import 'package:bmkg_inventory_system/view/takePage.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
@@ -23,18 +24,29 @@ class _HomeState extends State<HomePage> {
   int barangTersedia = 0;
   int barangDipinjam = 0;
 
+  // Variabel untuk nama pengguna
+  String _username = "Pengguna";
+
   // Timer untuk refresh berkala
   Timer? _refreshTimer;
 
   @override
   void initState() {
     super.initState();
-    // Panggil fungsi untuk mengambil data barang saat halaman dimuat
     fetchBarangData();
+    _loadUsername();
 
     // Atur timer untuk refresh setiap 30 detik
-    _refreshTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+    _refreshTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       fetchBarangData();
+    });
+  }
+
+  // Memuat nama pengguna dari SharedPreferences
+  Future<void> _loadUsername() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _username = prefs.getString('username') ?? 'Pengguna';
     });
   }
 
@@ -62,12 +74,14 @@ class _HomeState extends State<HomePage> {
             totalBarang = barangList.length;
 
             // Hitung barang tersedia
-            barangTersedia = barangList.where((barang) => 
-                barang['status'] == 'tersedia').length;
+            barangTersedia = barangList
+                .where((barang) => barang['status'] == 'tersedia')
+                .length;
 
             // Hitung barang dipinjam (diasumsikan status selain 'tersedia' adalah dipinjam)
-            barangDipinjam = barangList.where((barang) => 
-                barang['status'] != 'tersedia').length;
+            barangDipinjam = barangList
+                .where((barang) => barang['status'] != 'tersedia')
+                .length;
           });
         }
       } else {
@@ -97,18 +111,35 @@ class _HomeState extends State<HomePage> {
   String getFormattedDate() {
     DateTime now = DateTime.now();
     List<String> months = [
-      "Januari", "Februari", "Maret", "April", "Mei", "Juni", 
-      "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+      "Januari",
+      "Februari",
+      "Maret",
+      "April",
+      "Mei",
+      "Juni",
+      "Juli",
+      "Agustus",
+      "September",
+      "Oktober",
+      "November",
+      "Desember"
     ];
     return "${now.day} ${months[now.month - 1]} ${now.year}";
   }
 
   String getGreeting() {
     final hour = DateTime.now().hour;
-    if (hour < 12) return "Selamat Pagi";
-    if (hour < 15) return "Selamat Siang";
-    if (hour < 18) return "Selamat Sore";
-    return "Selamat Malam";
+    String basicGreeting;
+    if (hour < 12)
+      basicGreeting = "Selamat Pagi";
+    else if (hour < 15)
+      basicGreeting = "Selamat Siang";
+    else if (hour < 18)
+      basicGreeting = "Selamat Sore";
+    else
+      basicGreeting = "Selamat Malam";
+
+    return "$basicGreeting, $_username!";
   }
 
   @override

@@ -103,7 +103,7 @@ class _ChooseTakeState extends State<ChooseTakePage> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://api-bmkg.athaland.my.id/api/barang'),
+        Uri.parse('http://api-bmkg.athaland.my.id/api/barang/ambil'),
         headers: {
           'Content-Type': 'application/json',
         },
