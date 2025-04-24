@@ -51,12 +51,12 @@ class _InventoryState extends State<InventoryPage> {
   List<String> categories = [
     "Semua",
     "Tersedia",
-    "Tidak Tersedia",
+    "Terpinjam",
     "Perkakas",
     "Alat Tulis",
-    "Gudang Operasional",
-    "Gudang Tata Usaha",
-    "Gudang Stasiun"
+    "Operasional",
+    "Tata Usaha",
+    "Radar"
   ];
   String selectedCategory = "Semua";
 
@@ -118,7 +118,7 @@ class _InventoryState extends State<InventoryPage> {
         if (selectedCategory == "Semua") {
           matchesCategory = true;
         } else if (selectedCategory == "Tersedia" ||
-            selectedCategory == "Tidak Tersedia") {
+            selectedCategory == "Terpinjam") {
           matchesCategory = item.status == selectedCategory.toLowerCase();
         } else {
           // Cek kategori atau gudang
@@ -134,9 +134,9 @@ class _InventoryState extends State<InventoryPage> {
 
       // Sort items - available first
       filteredItems.sort((a, b) {
-        if (a.status == "tidak tersedia" && b.status == "tersedia") {
+        if (a.status == "terpinjam" && b.status == "tersedia") {
           return 1;
-        } else if (a.status == "tersedia" && b.status == "tidak tersedia") {
+        } else if (a.status == "tersedia" && b.status == "terpinjam") {
           return -1;
         }
         return 0;
