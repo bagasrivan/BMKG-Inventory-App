@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:io';
-
+import 'package:bmkg_inventory_system/controller/navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -274,7 +274,7 @@ class _ReturnState extends State<ReturnPage> {
 
     _showCustomSnackBar(
       message: errorMessage,
-      color: Colors.red,
+      color: Colors.green,
     );
 
     // Optional: Log the full error response for debugging
@@ -426,8 +426,10 @@ class _ReturnState extends State<ReturnPage> {
     );
   }
 
-  // Submit form dengan API
   Future<void> _submitForm() async {
+    // Tambahkan pengecekan mounted
+    if (!mounted) return;
+
     setState(() {
       _isSubmitting = true;
     });
@@ -466,67 +468,58 @@ class _ReturnState extends State<ReturnPage> {
       final responseBody = json.decode(response.body);
 
       // Cek status response dan pesan dari server
-      if (response.statusCode == 200) {
-        // Cek apakah ada pesan kesalahan parsial
-        if (responseBody['partial_success'] == true) {
-          // Pengembalian sebagian berhasil
-          _showCustomSnackBar(
-            message: responseBody['message'] ??
-                'Barang berhasil dikembalikan',
-            color: Colors.green,
-          );
-        } else {
-          // Pengembalian berhasil total
-          _showCustomSnackBar(
-            message: 'Pengembalian barang berhasil disimpan',
-            color: Colors.green,
-          );
-        }
+      if (!mounted) return;
 
-        // Refresh the list of borrowed items
-        await _fetchBorrowedItems();
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // Berhasil mengembalikan barang
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content:
+                Text(responseBody['message'] ?? 'Pengembalian barang berhasil'),
+            backgroundColor: Colors.green,
+          ),
+        );
 
-        // Reset selected items
-        setState(() {
-          selectedItems = [];
-        });
-
-        // Kembali ke halaman utama
-        Navigator.of(context).popUntil((route) => route.isFirst);
+        // Navigasi ke halaman utama (HomePage) dan hapus semua rute sebelumnya
+        Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const Navigation()),
+            (Route<dynamic> route) => false);
       } else {
         // Error dari server
         String errorMessage =
             responseBody['message'] ?? 'Gagal mengembalikan barang';
-        throw Exception(errorMessage);
+
+        // Tampilkan pesan error dari server
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(errorMessage),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+        Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const Navigation()),
+            (Route<dynamic> route) => false);
       }
     } catch (e) {
       print('Form Submission Error: $e');
 
-      // Tampilkan pesan error
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(Icons.error, color: Colors.white),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text('Error: ${e.toString()}'),
-              ),
-            ],
+      // Tampilkan pesan error yang lebih informatif
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal mengembalikan barang: ${e.toString()}'),
+            backgroundColor: Colors.red,
           ),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          margin: const EdgeInsets.all(10),
-          duration: const Duration(seconds: 3),
-        ),
-      );
+        );
+      }
     } finally {
-      setState(() {
-        _isSubmitting = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
     }
   }
 

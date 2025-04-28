@@ -22,26 +22,16 @@ class _AddState extends State<AddPage> {
   String _loggedInUserName = "Memuat..."; // Default value while loading
   int _userId = 0; // Menyimpan ID user yang login
   DateTime selectedDate = DateTime.now();
-  List<Map<String, dynamic>> selectedItems =
-      []; // Ubah ke Map untuk menyimpan nama dan ID
+  List<Map<String, dynamic>> selectedItems = []; // Ubah ke Map untuk menyimpan nama dan ID
   bool _isFormValid = false;
   bool _isLoading = true;
   bool _isSubmitting = false; // Flag untuk proses submit
+  bool _formSubmitted = false; // Flag untuk menandai form berhasil submit
 
   // Nama bulan dalam bahasa Indonesia
   final List<String> _namabulan = [
-    'Januari',
-    'Februari',
-    'Maret',
-    'April',
-    'Mei',
-    'Juni',
-    'Juli',
-    'Agustus',
-    'September',
-    'Oktober',
-    'November',
-    'Desember'
+    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
   ];
 
   final List<String> locations = ["Operasional", "Tata Usaha", "Radar"];
@@ -64,13 +54,25 @@ class _AddState extends State<AddPage> {
     });
   }
 
+  // Remove all cart-clearing code from didChangeDependencies and dispose()
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // No cart provider reference stored here anymore
+  }
+
+  @override
+  void dispose() {
+    // No cart clearing here - will use WillPopScope instead
+    super.dispose();
+  }
+
   // Load user data from SharedPreferences
   Future<void> _loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _loggedInUserName = prefs.getString('username') ?? 'Pengguna';
-      _userId = prefs.getInt('user_id') ??
-          0; // Mengambil user_id dari SharedPreferences
+      _userId = prefs.getInt('user_id') ?? 0; // Mengambil user_id dari SharedPreferences
       _validateForm(); // Validate form after loading username
     });
   }
@@ -91,7 +93,6 @@ class _AddState extends State<AddPage> {
   }
 
   // Dialog konfirmasi hapus item
-  // Dialog konfirmasi hapus item
   void _confirmDelete(Map<String, dynamic> item) {
     final cartProvider = Provider.of<CartProvider>(context, listen: false);
 
@@ -100,8 +101,7 @@ class _AddState extends State<AddPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Konfirmasi Hapus Barang'),
-          content: const Text(
-              "Apakah Anda yakin ingin menghapus barang ini dari daftar peminjaman?"),
+          content: const Text("Apakah Anda yakin ingin menghapus barang ini dari daftar peminjaman?"),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -140,7 +140,7 @@ class _AddState extends State<AddPage> {
     );
   }
 
-// Modifikasi tombol pilih barang
+  // Modifikasi tombol pilih barang
   void _navigateToChooseItems() async {
     final cartProvider = Provider.of<CartProvider>(context, listen: false);
 
@@ -166,83 +166,82 @@ class _AddState extends State<AddPage> {
   // Dialog konfirmasi submit
   void _confirmSubmit() {
     showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Konfirmasi Peminjaman'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text("Apakah data peminjaman sudah benar?"),
-                const SizedBox(height: 16),
-                _buildConfirmationInfoRow(
-                  label: "Lokasi",
-                  value: selectedLocation!,
-                ),
-                _buildConfirmationInfoRow(
-                  label: "Peminjam",
-                  value: _loggedInUserName,
-                ),
-                _buildConfirmationInfoRow(
-                  label: "Tanggal Pinjam",
-                  value: _formatTanggal(DateTime.now()),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  "Barang yang dipinjam:",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                ...selectedItems
-                    .map((item) => Padding(
-                          padding: const EdgeInsets.only(left: 8.0, top: 4),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.circle,
-                                  size: 6, color: Colors.grey),
-                              const SizedBox(width: 8),
-                              Text(item['nama']),
-                            ],
-                          ),
-                        ))
-                    .toList(),
-              ],
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text(
-                  'Periksa Kembali',
-                  style: TextStyle(color: bmkgBlue),
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Konfirmasi Peminjaman'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text("Apakah data peminjaman sudah benar?"),
+              const SizedBox(height: 16),
+              _buildConfirmationInfoRow(
+                label: "Lokasi",
+                value: selectedLocation!,
+              ),
+              _buildConfirmationInfoRow(
+                label: "Peminjam",
+                value: _loggedInUserName,
+              ),
+              _buildConfirmationInfoRow(
+                label: "Tanggal Pinjam",
+                value: _formatTanggal(DateTime.now()),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                "Barang yang dipinjam:",
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
                 ),
               ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: bmkgBlue,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  _submitForm();
-                },
-                child: const Text('Konfirmasi'),
-              ),
+              const SizedBox(height: 4),
+              ...selectedItems
+                  .map((item) => Padding(
+                        padding: const EdgeInsets.only(left: 8.0, top: 4),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.circle, size: 6, color: Colors.grey),
+                            const SizedBox(width: 8),
+                            Text(item['nama']),
+                          ],
+                        ),
+                      ))
+                  .toList(),
             ],
-          );
-        });
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text(
+                'Periksa Kembali',
+                style: TextStyle(color: bmkgBlue),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: bmkgBlue,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _submitForm();
+              },
+              child: const Text('Konfirmasi'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
-  Widget _buildConfirmationInfoRow(
-      {required String label, required String value}) {
+  Widget _buildConfirmationInfoRow({required String label, required String value}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
       child: Row(
@@ -267,6 +266,40 @@ class _AddState extends State<AddPage> {
         ],
       ),
     );
+  }
+
+  // Helper method to clear cart safely
+  void _clearCart() {
+    try {
+      final cartProvider = Provider.of<CartProvider>(context, listen: false);
+      // Use clearItems if it exists
+      if (cartProvider.items.isNotEmpty) {
+        // Check if clearItems method exists
+        try {
+          cartProvider.clearItems();
+        } catch (e) {
+          // If clearItems doesn't exist, remove items one by one
+          List<Map<String, dynamic>> itemsToRemove = List.from(cartProvider.items);
+          for (var item in itemsToRemove) {
+            if (item.containsKey('id')) {
+              cartProvider.removeItem(item['id']);
+            }
+          }
+        }
+      }
+    } catch (e) {
+      // If an error occurs, silently fail - we're exiting the page anyway
+      print('Error clearing cart: $e');
+    }
+  }
+
+  // Handle back button press and navigation
+  Future<bool> _onWillPop() async {
+    // Only clear cart if form was not submitted
+    if (!_formSubmitted) {
+      _clearCart();
+    }
+    return true; // Allow navigation
   }
 
   // Submit form - Mengirim data ke API
@@ -302,8 +335,7 @@ class _AddState extends State<AddPage> {
 
     try {
       // Ekstrak ID barang yang dipilih
-      List<int> itemIds =
-          selectedItems.map<int>((item) => item['id'] as int).toList();
+      List<int> itemIds = selectedItems.map<int>((item) => item['id'] as int).toList();
 
       // Persiapkan data untuk dikirim ke API
       final requestBody = {"id_user": _userId, "daftar_barang": itemIds};
@@ -319,6 +351,11 @@ class _AddState extends State<AddPage> {
 
       // Cek status response
       if (response.statusCode == 207 || response.statusCode == 201) {
+        // Set flag bahwa form berhasil disubmit
+        setState(() {
+          _formSubmitted = true;
+        });
+
         // Sukses
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -341,6 +378,9 @@ class _AddState extends State<AddPage> {
           ),
         );
 
+        // Clear cart using our helper method
+        _clearCart();
+
         // Navigasi kembali ke halaman sebelumnya
         Future.delayed(const Duration(milliseconds: 1500), () {
           Navigator.pop(context);
@@ -348,8 +388,7 @@ class _AddState extends State<AddPage> {
       } else {
         // Error dari server
         Map<String, dynamic> errorResponse = jsonDecode(response.body);
-        throw Exception(
-            errorResponse['message'] ?? 'Gagal menyimpan peminjaman');
+        throw Exception(errorResponse['message'] ?? 'Gagal menyimpan peminjaman');
       }
     } catch (e) {
       // Error handling
@@ -418,447 +457,416 @@ class _AddState extends State<AddPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: const Text(
-          'Peminjaman Barang',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        backgroundColor: Colors.grey[50],
+        appBar: AppBar(
+          title: const Text(
+            'Peminjaman Barang',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+            ),
+          ),
+          centerTitle: true,
+          backgroundColor: bmkgBlue,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(
+              bottom: Radius.circular(20),
+            ),
+          ),
+          // Override the back button behavior
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              _onWillPop().then((_) => Navigator.of(context).pop());
+            },
           ),
         ),
-        centerTitle: true,
-        backgroundColor: bmkgBlue,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-            bottom: Radius.circular(20),
-          ),
-        ),
-      ),
-      body: _isLoading
-          ? _buildLoadingScreen()
-          : Stack(
-              children: [
-                SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  child: Column(
-                    children: [
-                      // Header dengan informasi
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.1),
-                              spreadRadius: 1,
-                              blurRadius: 10,
-                              offset: const Offset(0, 1),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: bmkgLightBlue.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: const Icon(
-                                    Icons.assignment_add,
-                                    color: bmkgLightBlue,
-                                    size: 24,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: const [
-                                      Text(
-                                        'Form Peminjaman Barang',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: bmkgBlue,
-                                        ),
-                                      ),
-                                      SizedBox(height: 4),
-                                      Text(
-                                        'Silakan isi data peminjaman barang dengan lengkap',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          color: Colors.grey,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // Form peminjaman
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Card(
-                          elevation: 2,
-                          shadowColor: Colors.black.withOpacity(0.1),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Lokasi field
-                                _buildFormLabel("Lokasi Peminjaman"),
-                                const SizedBox(height: 8),
-                                Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12),
-                                    color: Colors.white,
-                                    border: Border.all(
-                                      color: Colors.grey.shade300,
-                                      width: 1,
-                                    ),
-                                  ),
-                                  child: DropdownButtonFormField<String>(
-                                    value: selectedLocation,
-                                    hint: const Text("Pilih Lokasi"),
-                                    icon: const Icon(Icons.arrow_drop_down,
-                                        color: bmkgBlue),
-                                    decoration: const InputDecoration(
-                                      contentPadding: EdgeInsets.symmetric(
-                                          horizontal: 16, vertical: 14),
-                                      border: InputBorder.none,
-                                    ),
-                                    isExpanded: true,
-                                    items: locations
-                                        .map((loc) => DropdownMenuItem(
-                                            value: loc, child: Text(loc)))
-                                        .toList(),
-                                    onChanged: (value) {
-                                      setState(() {
-                                        selectedLocation = value;
-                                        _validateForm();
-                                      });
-                                    },
-                                  ),
-                                ),
-
-                                const SizedBox(height: 20),
-
-                                // Peminjam field (static with username already filled)
-                                _buildFormLabel("Nama Peminjam"),
-                                const SizedBox(height: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 14),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12),
-                                    border:
-                                        Border.all(color: Colors.grey.shade300),
-                                    color: Colors.grey.shade50,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      const Icon(Icons.person, color: bmkgBlue),
-                                      const SizedBox(width: 12),
-                                      Text(
-                                        _loggedInUserName,
-                                        style: const TextStyle(
-                                          fontSize: 15,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-
-                                const SizedBox(height: 20),
-
-                                // Tanggal Pinjam (STATIC - MODIFIED)
-                                _buildFormLabel("Tanggal Peminjaman"),
-                                const SizedBox(height: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 14),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12),
-                                    border:
-                                        Border.all(color: Colors.grey.shade300),
-                                    color: Colors.grey
-                                        .shade50, // Background abu-abu muda untuk menunjukkan field tidak aktif
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      const Icon(Icons.calendar_today,
-                                          color: bmkgBlue),
-                                      const SizedBox(width: 12),
-                                      Text(
-                                        _formatTanggal(DateTime.now()),
-                                        style: const TextStyle(
-                                          fontSize: 15,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-
-                                const SizedBox(height: 20),
-
-                                // Barang yang dipinjam
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    _buildFormLabel("Barang yang Dipinjam"),
-                                    ElevatedButton.icon(
-                                      onPressed: () async {
-                                        final result = await Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    const ChooseItemPage()));
-
-                                        if (result != null) {
-                                          // Mengubah format data yang diterima untuk menyimpan ID dan nama barang
-                                          setState(() {
-                                            selectedItems = result;
-                                            _validateForm();
-                                          });
-                                        }
-                                      },
-                                      icon: const Icon(Icons.add, size: 18),
-                                      label: const Text("Pilih Barang"),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: bmkgBlue,
-                                        foregroundColor: Colors.white,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(20),
-                                        ),
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 16, vertical: 8),
-                                        textStyle: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 12),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      // Daftar barang yang dipilih
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (selectedItems.isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 4.0, bottom: 8.0),
-                                child: Text(
-                                  "${selectedItems.length} barang dipilih",
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
+        body: _isLoading
+            ? _buildLoadingScreen()
+            : Stack(
+                children: [
+                  SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: Column(
+                      children: [
+                        // Header dengan informasi
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.1),
+                                spreadRadius: 1,
+                                blurRadius: 10,
+                                offset: const Offset(0, 1),
                               ),
-
-                            selectedItems.isNotEmpty
-                                ? ListView.builder(
-                                    physics:
-                                        const NeverScrollableScrollPhysics(),
-                                    shrinkWrap: true,
-                                    itemCount: selectedItems.length,
-                                    itemBuilder: (context, index) {
-                                      final item = selectedItems[index];
-                                      return Card(
-                                        margin:
-                                            const EdgeInsets.only(bottom: 8),
-                                        elevation: 1,
-                                        shadowColor:
-                                            Colors.black.withOpacity(0.1),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(12),
-                                        ),
-                                        child: ListTile(
-                                          contentPadding:
-                                              const EdgeInsets.symmetric(
-                                                  horizontal: 16, vertical: 8),
-                                          leading: Container(
-                                            padding: const EdgeInsets.all(8),
-                                            decoration: BoxDecoration(
-                                              color: bmkgLightBlue
-                                                  .withOpacity(0.1),
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                            ),
-                                            child: const Icon(
-                                              Icons.inventory_2,
-                                              color: bmkgLightBlue,
-                                            ),
-                                          ),
-                                          title: Text(
-                                            item['nama'],
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                          trailing: IconButton(
-                                            icon: const Icon(
-                                                Icons.delete_outline),
-                                            color: Colors.red,
-                                            onPressed: () =>
-                                                _confirmDelete(item),
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  )
-                                : Container(
-                                    padding: const EdgeInsets.all(20),
-                                    alignment: Alignment.center,
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(10),
                                     decoration: BoxDecoration(
-                                      color: Colors.grey[100],
+                                      color: bmkgLightBlue.withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Icon(
+                                      Icons.assignment_add,
+                                      color: bmkgLightBlue,
+                                      size: 24,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: const [
+                                        Text(
+                                          'Form Peminjaman Barang',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: bmkgBlue,
+                                          ),
+                                        ),
+                                        SizedBox(height: 4),
+                                        Text(
+                                          'Silakan isi data peminjaman barang dengan lengkap',
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // Form peminjaman
+                        Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Card(
+                            elevation: 2,
+                            shadowColor: Colors.black.withOpacity(0.1),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Lokasi field
+                                  _buildFormLabel("Lokasi Peminjaman"),
+                                  const SizedBox(height: 8),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(12),
+                                      color: Colors.white,
                                       border: Border.all(
-                                        color: Colors.grey[300]!,
+                                        color: Colors.grey.shade300,
                                         width: 1,
                                       ),
                                     ),
-                                    child: Column(
+                                    child: DropdownButtonFormField<String>(
+                                      value: selectedLocation,
+                                      hint: const Text("Pilih Lokasi"),
+                                      icon: const Icon(Icons.arrow_drop_down, color: bmkgBlue),
+                                      decoration: const InputDecoration(
+                                        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                        border: InputBorder.none,
+                                      ),
+                                      isExpanded: true,
+                                      items: locations
+                                          .map((loc) => DropdownMenuItem(value: loc, child: Text(loc)))
+                                          .toList(),
+                                      onChanged: (value) {
+                                        setState(() {
+                                          selectedLocation = value;
+                                          _validateForm();
+                                        });
+                                      },
+                                    ),
+                                  ),
+
+                                  const SizedBox(height: 20),
+
+                                  // Peminjam field (static with username already filled)
+                                  _buildFormLabel("Nama Peminjam"),
+                                  const SizedBox(height: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: Colors.grey.shade300),
+                                      color: Colors.grey.shade50,
+                                    ),
+                                    child: Row(
                                       children: [
-                                        Icon(
-                                          Icons.inventory_2_outlined,
-                                          size: 40,
-                                          color: Colors.grey[400],
-                                        ),
-                                        const SizedBox(height: 12),
+                                        const Icon(Icons.person, color: bmkgBlue),
+                                        const SizedBox(width: 12),
                                         Text(
-                                          'Belum ada barang dipilih',
-                                          style: TextStyle(
+                                          _loggedInUserName,
+                                          style: const TextStyle(
                                             fontSize: 15,
-                                            color: Colors.grey[600],
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          'Silakan pilih barang yang akan dipinjam',
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            color: Colors.grey[500],
                                           ),
                                         ),
                                       ],
                                     ),
                                   ),
 
-                            const SizedBox(height: 24),
+                                  const SizedBox(height: 20),
 
-                            // Tombol Submit
-                            SizedBox(
-                              width: double.infinity,
-                              height: 50,
-                              child: ElevatedButton(
-                                onPressed: _isFormValid && !_isSubmitting
-                                    ? _confirmSubmit
-                                    : null,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: bmkgBlue,
-                                  disabledBackgroundColor: Colors.grey[300],
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                  // Tanggal Pinjam (STATIC - MODIFIED)
+                                  _buildFormLabel("Tanggal Peminjaman"),
+                                  const SizedBox(height: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: Colors.grey.shade300),
+                                      color: Colors.grey.shade50, // Background abu-abu muda untuk menunjukkan field tidak aktif
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        const Icon(Icons.calendar_today, color: bmkgBlue),
+                                        const SizedBox(width: 12),
+                                        Text(
+                                          _formatTanggal(DateTime.now()),
+                                          style: const TextStyle(
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                child: _isSubmitting
-                                    ? CircularProgressIndicator(
-                                        color: Colors.white)
-                                    : const Text(
-                                        'Simpan Peminjaman',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
+
+                                  const SizedBox(height: 20),
+
+                                  // Barang yang dipinjam
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      _buildFormLabel("Barang yang Dipinjam"),
+                                      ElevatedButton.icon(
+                                        onPressed: _navigateToChooseItems,
+                                        icon: const Icon(Icons.add, size: 18),
+                                        label: const Text("Pilih Barang"),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: bmkgBlue,
+                                          foregroundColor: Colors.white,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(20),
+                                          ),
+                                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                          textStyle: const TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500,
+                                          ),
                                         ),
                                       ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                ],
                               ),
                             ),
+                          ),
+                        ),
 
-                            // Footer
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 20),
-                              child: Center(
-                                child: Text(
-                                  'Pastikan data yang dimasukkan sudah benar',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey.shade600,
+                        // Daftar barang yang dipilih
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (selectedItems.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 4.0, bottom: 8.0),
+                                  child: Text(
+                                    "${selectedItems.length} barang dipilih",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.grey[600],
+                                    ),
                                   ),
                                 ),
+
+                              selectedItems.isNotEmpty
+                                  ? ListView.builder(
+                                      physics: const NeverScrollableScrollPhysics(),
+                                      shrinkWrap: true,
+                                      itemCount: selectedItems.length,
+                                      itemBuilder: (context, index) {
+                                        final item = selectedItems[index];
+                                        return Card(
+                                          margin: const EdgeInsets.only(bottom: 8),
+                                          elevation: 1,
+                                          shadowColor: Colors.black.withOpacity(0.1),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child: ListTile(
+                                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                            leading: Container(
+                                              padding: const EdgeInsets.all(8),
+                                              decoration: BoxDecoration(
+                                                color: bmkgLightBlue.withOpacity(0.1),
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                              child: const Icon(
+                                                Icons.inventory_2,
+                                                color: bmkgLightBlue,
+                                              ),
+                                            ),
+                                            title: Text(
+                                              item['nama'],
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                            trailing: IconButton(
+                                              icon: const Icon(Icons.delete_outline),
+                                              color: Colors.red,
+                                              onPressed: () => _confirmDelete(item),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    )
+                                  : Container(
+                                      padding: const EdgeInsets.all(20),
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[100],
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: Colors.grey[300]!,
+                                          width: 1,
+                                        ),
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          Icon(
+                                            Icons.inventory_2_outlined,
+                                            size: 40,
+                                            color: Colors.grey[400],
+                                          ),
+                                          const SizedBox(height: 12),
+                                          Text(
+                                            'Belum ada barang dipilih',
+                                            style: TextStyle(
+                                              fontSize: 15,
+                                              color: Colors.grey[600],
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            'Silakan pilih barang yang akan dipinjam',
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              color: Colors.grey[500],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+
+                              const SizedBox(height: 24),
+
+                              // Tombol Submit
+                              SizedBox(
+                                width: double.infinity,
+                                height: 50,
+                                child: ElevatedButton(
+                                  onPressed: _isFormValid && !_isSubmitting ? _confirmSubmit : null,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: bmkgBlue,
+                                    disabledBackgroundColor: Colors.grey[300],
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  child: _isSubmitting
+                                      ? CircularProgressIndicator(color: Colors.white)
+                                      : const Text(
+                                          'Simpan Peminjaman',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // Loading overlay saat submit
-                if (_isSubmitting)
-                  Container(
-                    color: Colors.black.withOpacity(0.3),
-                    child: Center(
-                      child: Card(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(24.0),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              CircularProgressIndicator(
-                                color: bmkgBlue,
-                              ),
-                              const SizedBox(height: 16),
-                              const Text(
-                                'Menyimpan peminjaman...',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w500,
+
+                              // Footer
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 20),
+                                child: Center(
+                                  child: Text(
+                                    'Pastikan data yang dimasukkan sudah benar',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
-              ],
-            ),
+                  // Loading overlay saat submit
+                  if (_isSubmitting)
+                    Container(
+                      color: Colors.black.withOpacity(0.3),
+                      child: Center(
+                        child: Card(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(24.0),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                CircularProgressIndicator(
+                                  color: bmkgBlue,
+                                ),
+                                const SizedBox(height: 16),
+                                const Text(
+                                  'Menyimpan peminjaman...',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+      ),
     );
   }
 }

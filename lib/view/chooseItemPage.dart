@@ -72,7 +72,7 @@ class _ChooseItemState extends State<ChooseItemPage> {
   static const Color bmkgBlue = Color(0xFF0D47A1);
   static const Color bmkgLightBlue = Color(0xFF1976D2);
 
-  List<String> categories = ["Tersedia", "Semua Barang"];
+  List<String> categories = ["Tersedia", "Terpinjam"];
   String selectedCategory = "Tersedia";
   List<Map<String, dynamic>> selectedItems =
       []; // Ubah ke List<Map> untuk menyimpan id dan nama barang
@@ -139,7 +139,7 @@ class _ChooseItemState extends State<ChooseItemPage> {
                     nama:
                         "Error: ${e.toString().substring(0, min(20, e.toString().length))}...",
                     gambar: '',
-                    status: 'Tidak Tersedia',
+                    status: 'Terpinjam',
                     gudang: 'Unknown',
                     kategori: 'Unknown',
                   );
@@ -219,7 +219,7 @@ class _ChooseItemState extends State<ChooseItemPage> {
             _confirmSelection(scannedItem);
           } else {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text('Barang ${scannedItem.nama} tidak tersedia'),
+              content: Text('Barang ${scannedItem.nama} terpinjam'),
               backgroundColor: Colors.orange,
             ));
           }
@@ -261,8 +261,21 @@ class _ChooseItemState extends State<ChooseItemPage> {
     }
   }
 
+  // Modify the _confirmSelection method to update selectedItems:
+
+  // Modify the _confirmSelection method to check for item availability:
+
   void _confirmSelection(InventoryItem item) {
     try {
+      // First, check if the item is actually available
+      if (item.status.toLowerCase() != "tersedia") {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Barang ${item.nama} tidak tersedia untuk dipinjam'),
+          backgroundColor: Colors.orange,
+        ));
+        return; // Exit the method early
+      }
+
       final cartProvider = Provider.of<CartProvider>(context, listen: false);
 
       print('Attempting to add item: ${item.nama}'); // Debug print
@@ -282,11 +295,20 @@ class _ChooseItemState extends State<ChooseItemPage> {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    // Tambahkan barang ke keranjang
-                    cartProvider.addItem({
+                    // Create the item data
+                    Map<String, dynamic> itemData = {
                       'id': item.id,
                       'nama': item.nama,
+                    };
+
+                    // Tambahkan barang ke keranjang
+                    cartProvider.addItem(itemData);
+
+                    // Update the selectedItems list in the state
+                    setState(() {
+                      selectedItems = List.from(cartProvider.items);
                     });
+
                     Navigator.of(context).pop();
                   },
                   child: const Text('Ya'),
@@ -319,25 +341,21 @@ class _ChooseItemState extends State<ChooseItemPage> {
     String query = _searchController.text.toLowerCase();
 
     setState(() {
+      // Filter items based on search and category
       filteredItems = items.where((item) {
-        bool matchesCategory = selectedCategory == "Semua Barang" ||
-            item.status.toLowerCase() == "tersedia";
-        bool matchesSearch = item.nama.toLowerCase().contains(query);
+        // Sesuaikan filter berdasarkan kategori yang dipilih
+        bool matchesCategory = selectedCategory == "Tersedia"
+            ? item.status.toLowerCase() == "tersedia"
+            : item.status.toLowerCase() == "terpinjam";
 
-        return matchesCategory && matchesSearch;
+        // Cocokkan dengan nama barang
+        bool matchesQuery = item.nama.toLowerCase().contains(query);
+
+        return matchesCategory && matchesQuery;
       }).toList();
 
-      // Urutkan barang yang tersedia ke atas
-      filteredItems.sort((a, b) {
-        if (a.status.toLowerCase() == "tidak tersedia" &&
-            b.status.toLowerCase() == "tersedia") {
-          return 1;
-        } else if (a.status.toLowerCase() == "tersedia" &&
-            b.status.toLowerCase() == "tidak tersedia") {
-          return -1;
-        }
-        return 0;
-      });
+      // Urutkan berdasar nama
+      filteredItems.sort((a, b) => a.nama.compareTo(b.nama));
     });
   }
 
@@ -587,13 +605,24 @@ class _ChooseItemState extends State<ChooseItemPage> {
                                   ],
                                 ),
                                 trailing: item.status.toLowerCase() ==
-                                        "tidak tersedia"
-                                    ? Text(
-                                        'Tidak Tersedia',
-                                        style: TextStyle(
-                                          color: Colors.red,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 12,
+                                        "terpinjam"
+                                    ? ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.grey[300],
+                                          foregroundColor: Colors.grey[700],
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                          ),
+                                        ),
+                                        onPressed:
+                                            null, // Tombol benar-benar tidak aktif
+                                        child: const Text(
+                                          'Terpinjam',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                       )
                                     : ElevatedButton(
@@ -609,23 +638,25 @@ class _ChooseItemState extends State<ChooseItemPage> {
                                                 BorderRadius.circular(10),
                                           ),
                                         ),
-                                        onPressed: item.status.toLowerCase() ==
-                                                "tidak tersedia"
-                                            ? null
-                                            : () {
-                                                setState(() {
-                                                  if (isSelected) {
-                                                    // Hapus item dari daftar
-                                                    selectedItems.removeWhere(
-                                                        (element) =>
-                                                            element['id'] ==
-                                                            item.id);
-                                                  } else {
-                                                    // Konfirmasi pemilihan
-                                                    _confirmSelection(item);
-                                                  }
-                                                });
-                                              },
+                                        onPressed: () {
+                                          if (isSelected) {
+                                            // Remove the item from the cart provider
+                                            final cartProvider =
+                                                Provider.of<CartProvider>(
+                                                    context,
+                                                    listen: false);
+                                            cartProvider.removeItem(item.id);
+
+                                            // Update the local selectedItems list
+                                            setState(() {
+                                              selectedItems =
+                                                  List.from(cartProvider.items);
+                                            });
+                                          } else {
+                                            // Only allow selection if item is available
+                                            _confirmSelection(item);
+                                          }
+                                        },
                                         child: Text(
                                           isSelected ? 'Batal' : 'Pilih',
                                           style: const TextStyle(

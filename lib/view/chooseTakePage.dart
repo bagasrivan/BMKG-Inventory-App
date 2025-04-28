@@ -12,7 +12,7 @@ class InventoryItem {
   final String status;
   final String gudang;
   final String kategori;
-  final int? stok;
+  final int stok;
   final String? qr;
 
   InventoryItem({
@@ -22,7 +22,7 @@ class InventoryItem {
     required this.status,
     required this.gudang,
     required this.kategori,
-    this.stok,
+    required this.stok,
     this.qr,
   });
 
@@ -53,7 +53,7 @@ class InventoryItem {
       status: json['status'] ?? 'Tidak Tersedia',
       gudang: json['gudang'] ?? 'Tidak Diketahui',
       kategori: json['kategori'] ?? 'Umum',
-      stok: json['stok'] is int ? json['stok'] : null,
+      stok: json['stok'] is int ? json['stok'] : 0, // Default stok 0 jika tidak ada
       qr: json['qr']?.toString(),
     );
   }
@@ -73,7 +73,7 @@ class _ChooseTakeState extends State<ChooseTakePage> {
 
   List<String> categories = ["Tersedia", "Semua Barang"];
   String selectedCategory = "Tersedia";
-  List<Map<String, dynamic>> selectedItems = []; // Simpan id dan nama barang
+  List<Map<String, dynamic>> selectedItems = []; // Simpan id, nama, dan jumlah barang
 
   List<InventoryItem> items = [];
   List<InventoryItem> filteredItems = [];
@@ -138,6 +138,7 @@ class _ChooseTakeState extends State<ChooseTakePage> {
                     status: 'Tidak Tersedia',
                     gudang: 'Unknown',
                     kategori: 'Unknown',
+                    stok: 0,
                   );
                 }
               }).toList();
@@ -222,45 +223,98 @@ class _ChooseTakeState extends State<ChooseTakePage> {
     }
   }
 
-  void _confirmSelection(InventoryItem item) {
-    // Dialog untuk konfirmasi pengambilan
+  void _showQuantityDialog(InventoryItem item) {
+    int quantity = 1; // Default quantity
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Konfirmasi Pengambilan Barang'),
-          content: Text('Apakah anda yakin ingin mengambil ${item.nama}?'),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text(
-                'Batal',
-                style: TextStyle(color: bmkgBlue),
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text('Pilih Jumlah ${item.nama}'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Stok tersedia: ${item.stok}'),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.remove_circle_outline),
+                        color: bmkgBlue,
+                        onPressed: quantity > 1
+                            ? () {
+                                setState(() {
+                                  quantity--;
+                                });
+                              }
+                            : null,
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.shade300),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          '$quantity',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.add_circle_outline),
+                        color: bmkgBlue,
+                        onPressed: quantity < item.stok
+                            ? () {
+                                setState(() {
+                                  quantity++;
+                                });
+                              }
+                            : null,
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: bmkgBlue,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text(
+                    'Batal',
+                    style: TextStyle(color: bmkgBlue),
+                  ),
                 ),
-              ),
-              onPressed: () {
-                setState(() {
-                  // Tambahkan barang ke daftar yang dipilih
-                  selectedItems.add({
-                    'id': item.id,
-                    'nama': item.nama,
-                  });
-                });
-                Navigator.of(context).pop();
-              },
-              child: const Text('Ya'),
-            ),
-          ],
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: bmkgBlue,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  onPressed: () {
+                    // Tambahkan item ke daftar dengan jumlahnya
+                    this.setState(() {
+                      selectedItems.add({
+                        'id': item.id,
+                        'nama': item.nama,
+                        'jumlah': quantity,
+                      });
+                    });
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Konfirmasi'),
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -272,7 +326,7 @@ class _ChooseTakeState extends State<ChooseTakePage> {
     setState(() {
       filteredItems = items.where((item) {
         bool matchesCategory = selectedCategory == "Semua Barang" ||
-            item.status.toLowerCase() == "tersedia";
+            (item.status.toLowerCase() == "tersedia" && item.stok > 0);
         bool matchesSearch = item.nama.toLowerCase().contains(query);
 
         return matchesCategory && matchesSearch;
@@ -280,11 +334,11 @@ class _ChooseTakeState extends State<ChooseTakePage> {
 
       // Urutkan barang yang tersedia ke atas
       filteredItems.sort((a, b) {
-        if (a.status.toLowerCase() == "tidak tersedia" &&
-            b.status.toLowerCase() == "tersedia") {
+        if (a.status.toLowerCase() == "tidak tersedia" ||
+            a.stok == 0 && b.status.toLowerCase() == "tersedia" && b.stok > 0) {
           return 1;
-        } else if (a.status.toLowerCase() == "tersedia" &&
-            b.status.toLowerCase() == "tidak tersedia") {
+        } else if (a.status.toLowerCase() == "tersedia" && a.stok > 0 &&
+            (b.status.toLowerCase() == "tidak tersedia" || b.stok == 0)) {
           return -1;
         }
         return 0;
@@ -472,123 +526,193 @@ class _ChooseTakeState extends State<ChooseTakePage> {
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: ListView.builder(
-                          itemCount: filteredItems.length,
-                          itemBuilder: (context, index) {
-                            var item = filteredItems[index];
-                            // Cek apakah item sudah dipilih
-                            bool isSelected = selectedItems
-                                .any((element) => element['id'] == item.id);
-
-                            return Card(
-                              margin: const EdgeInsets.only(bottom: 8),
-                              elevation: 1,
-                              shadowColor: Colors.black.withOpacity(0.1),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: ListTile(
-                                contentPadding: const EdgeInsets.all(12),
-                                leading: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: bmkgLightBlue.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Image.network(
-                                    item.gambar,
-                                    width: 50,
-                                    height: 50,
-                                    fit: BoxFit.contain,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return Icon(
-                                        Icons.image_not_supported,
-                                        color: Colors.grey[400],
-                                      );
-                                    },
-                                  ),
-                                ),
-                                title: Text(
-                                  item.nama,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                subtitle: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                        child: filteredItems.isEmpty
+                            ? Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Text(
-                                      item.kategori,
-                                      style: const TextStyle(fontSize: 12),
+                                    Icon(
+                                      Icons.inventory_2_outlined,
+                                      size: 64,
+                                      color: Colors.grey[300],
                                     ),
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.location_on,
-                                          size: 14,
-                                          color: bmkgLightBlue,
-                                        ),
-                                        Text(
-                                          item.gudang,
-                                          style: const TextStyle(fontSize: 12),
-                                        ),
-                                      ],
-                                    )
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'Tidak ada barang ditemukan',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.grey[600],
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
                                   ],
                                 ),
-                                trailing: item.status.toLowerCase() ==
-                                        "tidak tersedia"
-                                    ? Text(
-                                        'Tidak Tersedia',
-                                        style: TextStyle(
-                                          color: Colors.red,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 12,
+                              )
+                            : ListView.builder(
+                                itemCount: filteredItems.length,
+                                itemBuilder: (context, index) {
+                                  var item = filteredItems[index];
+                                  // Cek apakah item sudah dipilih
+                                  bool isSelected = selectedItems
+                                      .any((element) => element['id'] == item.id);
+
+                                  return Card(
+                                    margin: const EdgeInsets.only(bottom: 8),
+                                    elevation: 1,
+                                    shadowColor: Colors.black.withOpacity(0.1),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: ListTile(
+                                      contentPadding: const EdgeInsets.all(12),
+                                      leading: Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: bmkgLightBlue.withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(8),
                                         ),
-                                      )
-                                    : ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: isSelected
-                                              ? bmkgLightBlue.withOpacity(0.2)
-                                              : bmkgBlue,
-                                          foregroundColor: isSelected
-                                              ? bmkgBlue
-                                              : Colors.white,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                          ),
-                                        ),
-                                        onPressed: item.status.toLowerCase() ==
-                                                "tidak tersedia"
-                                            ? null
-                                            : () {
-                                                setState(() {
-                                                  if (isSelected) {
-                                                    // Hapus item dari daftar
-                                                    selectedItems.removeWhere(
-                                                        (element) =>
-                                                            element['id'] ==
-                                                            item.id);
-                                                  } else {
-                                                    // Konfirmasi pemilihan
-                                                    _confirmSelection(item);
-                                                  }
-                                                });
-                                              },
-                                        child: Text(
-                                          isSelected ? 'Batal' : 'Pilih',
-                                          style: const TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                        child: Image.network(
+                                          item.gambar,
+                                          width: 50,
+                                          height: 50,
+                                          fit: BoxFit.contain,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                            return Icon(
+                                              Icons.image_not_supported,
+                                              color: Colors.grey[400],
+                                            );
+                                          },
                                         ),
                                       ),
+                                      title: Text(
+                                        item.nama,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      subtitle: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              const Icon(
+                                                Icons.category,
+                                                size: 14,
+                                                color: bmkgLightBlue,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                item.kategori,
+                                                style:
+                                                    const TextStyle(fontSize: 12),
+                                              ),
+                                            ],
+                                          ),
+                                          Row(
+                                            children: [
+                                              const Icon(
+                                                Icons.location_on,
+                                                size: 14,
+                                                color: bmkgLightBlue,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                item.gudang,
+                                                style:
+                                                    const TextStyle(fontSize: 12),
+                                              ),
+                                            ],
+                                          ),
+                                          Row(
+                                            children: [
+                                              const Icon(
+                                                Icons.inventory,
+                                                size: 14,
+                                                color: bmkgLightBlue,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                'Stok: ${item.stok}',
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: item.stok > 0
+                                                      ? Colors.green[700]
+                                                      : Colors.red,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                      trailing: item.status.toLowerCase() ==
+                                                  "tidak tersedia" ||
+                                              item.stok <= 0
+                                          ? Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                  horizontal: 8, vertical: 4),
+                                              decoration: BoxDecoration(
+                                                color: Colors.red.withOpacity(0.1),
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                              ),
+                                              child: const Text(
+                                                'Tidak Tersedia',
+                                                style: TextStyle(
+                                                  color: Colors.red,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                            )
+                                          : ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: isSelected
+                                                    ? bmkgLightBlue
+                                                        .withOpacity(0.2)
+                                                    : bmkgBlue,
+                                                foregroundColor: isSelected
+                                                    ? bmkgBlue
+                                                    : Colors.white,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(10),
+                                                ),
+                                              ),
+                                              onPressed: item.status
+                                                              .toLowerCase() ==
+                                                          "tidak tersedia" ||
+                                                      item.stok <= 0
+                                                  ? null
+                                                  : () {
+                                                      setState(() {
+                                                        if (isSelected) {
+                                                          // Hapus item dari daftar
+                                                          selectedItems.removeWhere(
+                                                              (element) =>
+                                                                  element['id'] ==
+                                                                  item.id);
+                                                        } else {
+                                                          // Tampilkan dialog pemilihan jumlah
+                                                          _showQuantityDialog(item);
+                                                        }
+                                                      });
+                                                    },
+                                              child: Text(
+                                                isSelected ? 'Batal' : 'Pilih',
+                                                style: const TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                    ),
+                                  );
+                                },
                               ),
-                            );
-                          },
-                        ),
                       ),
                     ),
 
@@ -609,24 +733,38 @@ class _ChooseTakeState extends State<ChooseTakePage> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                '${selectedItems.length}',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: bmkgBlue,
-                                ),
+                              Row(
+                                children: [
+                                  Text(
+                                    '${selectedItems.length}',
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: bmkgBlue,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  const Text(
+                                    'Jenis Barang',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(width: 10),
-                              const Text(
-                                'Barang',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.grey,
+                              if (selectedItems.isNotEmpty)
+                                Text(
+                                  'Total: ${selectedItems.fold(0, (sum, item) => sum + (item['jumlah'] as int))} item',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey[600],
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
-                              ),
                             ],
                           ),
                           ElevatedButton(
