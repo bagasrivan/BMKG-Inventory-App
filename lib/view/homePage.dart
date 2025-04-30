@@ -80,7 +80,7 @@ class _HomeState extends State<HomePage> {
 
             // Hitung barang dipinjam (diasumsikan status selain 'tersedia' adalah dipinjam)
             barangDipinjam = barangList
-                .where((barang) => barang['status'] != 'tersedia')
+                .where((barang) => barang['status'] == 'terpinjam')
                 .length;
           });
         }

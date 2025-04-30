@@ -7,10 +7,54 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ReturnPage extends StatefulWidget {
-  const ReturnPage({super.key});
+  const ReturnPage({Key? key}) : super(key: key);
 
   @override
   _ReturnState createState() => _ReturnState();
+}
+
+class BorrowedItem {
+  final int id;
+  final String name;
+  final DateTime borrowedDate;
+  final String location;
+  final String borrowerName;
+  final String condition;
+  final String notes;
+  final bool isSelected;
+
+  BorrowedItem({
+    required this.id,
+    required this.name,
+    required this.borrowedDate,
+    required this.location,
+    required this.borrowerName,
+    required this.condition,
+    required this.notes,
+    this.isSelected = false,
+  });
+
+  BorrowedItem copyWith({
+    int? id,
+    String? name,
+    DateTime? borrowedDate,
+    String? location,
+    String? borrowerName,
+    String? condition,
+    String? notes,
+    bool? isSelected,
+  }) {
+    return BorrowedItem(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      borrowedDate: borrowedDate ?? this.borrowedDate,
+      location: location ?? this.location,
+      borrowerName: borrowerName ?? this.borrowerName,
+      condition: condition ?? this.condition,
+      notes: notes ?? this.notes,
+      isSelected: isSelected ?? this.isSelected,
+    );
+  }
 }
 
 class _ReturnState extends State<ReturnPage> {
@@ -27,6 +71,10 @@ class _ReturnState extends State<ReturnPage> {
   bool _isLoading = true;
   bool _isSubmitting = false;
 
+  // Tambahkan variabel untuk gudang
+  String _selectedWarehouse = "Tata Usaha"; // Default value
+  List<String> _warehouseOptions = ["Tata Usaha", "Radar", "Operasional"];
+
   // Nama bulan dalam bahasa Indonesia
   final List<String> _namabulan = [
     'Januari',
@@ -42,6 +90,25 @@ class _ReturnState extends State<ReturnPage> {
     'November',
     'Desember'
   ];
+
+  // Metode untuk mendapatkan gudang unik
+  List<String> _getUniqueWarehouses(List<dynamic> items) {
+    final uniqueWarehouses = <String>{};
+
+    for (var item in items) {
+      if (item is Map && item['gudang'] != null) {
+        uniqueWarehouses.add(item['gudang'].toString());
+      }
+    }
+
+    // Tambahkan default jika tidak ada gudang ditemukan
+    if (uniqueWarehouses.isEmpty) {
+      uniqueWarehouses
+          .addAll(["Gudang Utama", "Stasiun", "Kantor Pusat", "Laboratorium"]);
+    }
+
+    return uniqueWarehouses.toList();
+  }
 
   @override
   void initState() {
@@ -92,24 +159,31 @@ class _ReturnState extends State<ReturnPage> {
       if (response.statusCode == 200) {
         final responseBody = json.decode(response.body);
 
-        // Multiple strategies to extract items
-        List<dynamic> items = _extractItemsFromResponse(responseBody);
-
-        if (items.isNotEmpty) {
+        if (responseBody is List) {
           setState(() {
-            borrowedItems = items.map((item) {
+            borrowedItems = responseBody.map((item) {
               return _mapToBorrowedItem(item);
             }).toList();
-          });
-        } else {
-          // Specific handling for empty data
-          setState(() {
-            borrowedItems = [];
+
+            // Update warehouse options dari data yang diparsing
+            _warehouseOptions = _getUniqueWarehouses(responseBody);
+
+            // Set default warehouse ke pilihan pertama
+            if (_warehouseOptions.isNotEmpty) {
+              _selectedWarehouse = _warehouseOptions.first;
+            }
           });
 
+          if (borrowedItems.isEmpty) {
+            _showCustomSnackBar(
+              message: 'Tidak ada barang yang sedang dipinjam',
+              color: Colors.orange,
+            );
+          }
+        } else {
           _showCustomSnackBar(
-            message: 'Tidak ada barang yang sedang dipinjam',
-            color: Colors.orange,
+            message: 'Format data tidak valid',
+            color: Colors.red,
           );
         }
       } else {
@@ -138,37 +212,10 @@ class _ReturnState extends State<ReturnPage> {
     }
   }
 
-// Ekstrak items dari berbagai struktur response
-  List<dynamic> _extractItemsFromResponse(dynamic responseBody) {
-    // Daftar kemungkinan field yang mungkin berisi items
-    final possibleFields = [
-      'data',
-      'items',
-      'result',
-      'results',
-      'borrowed_items',
-      'list'
-    ];
-
-    // Coba ekstrak items dari field yang mungkin
-    if (responseBody is List) return responseBody;
-
-    if (responseBody is Map) {
-      for (var field in possibleFields) {
-        if (responseBody[field] is List && responseBody[field].isNotEmpty) {
-          return responseBody[field];
-        }
-      }
-    }
-
-    return [];
-  }
-
-// Mapping yang lebih fleksibel untuk BorrowedItem
-// Mapping yang lebih fleksibel untuk BorrowedItem
+  // Mapping yang lebih fleksibel untuk BorrowedItem
   BorrowedItem _mapToBorrowedItem(dynamic item) {
     // Pastikan item adalah Map
-    final itemMap = item is Map ? item : {};
+    final itemMap = item is Map ? item : <String, dynamic>{};
 
     // Definisi field-field yang mungkin
     final possibleIdFields = ['id', 'barang_id', 'item_id', 'ID'];
@@ -179,7 +226,7 @@ class _ReturnState extends State<ReturnPage> {
       'date',
       'borrow_date'
     ];
-    final possibleLocationFields = ['lokasi', 'location'];
+    final possibleLocationFields = ['lokasi', 'location', 'gudang'];
     final possibleBorrowerFields = [
       'nama_peminjam',
       'peminjam',
@@ -247,11 +294,10 @@ class _ReturnState extends State<ReturnPage> {
       borrowerName: extractField(possibleBorrowerFields),
       condition: "Baik", // Default condition
       notes: "",
-      isSelected: false,
     );
   }
 
-// Penanganan error API yang lebih detail
+  // Penanganan error API yang lebih detail
   void _handleApiError(http.Response response) {
     String errorMessage;
 
@@ -274,7 +320,7 @@ class _ReturnState extends State<ReturnPage> {
 
     _showCustomSnackBar(
       message: errorMessage,
-      color: Colors.green,
+      color: Colors.red,
     );
 
     // Optional: Log the full error response for debugging
@@ -285,7 +331,8 @@ class _ReturnState extends State<ReturnPage> {
   void _validateForm() {
     setState(() {
       _isFormValid = selectedItems.isNotEmpty &&
-          selectedItems.every((item) => item.condition.isNotEmpty);
+          selectedItems.every((item) => item.condition.isNotEmpty) &&
+          _selectedWarehouse.isNotEmpty; // Tambahkan validasi gudang
     });
   }
 
@@ -297,104 +344,109 @@ class _ReturnState extends State<ReturnPage> {
   // Dialog konfirmasi submit
   void _confirmSubmit() {
     showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Konfirmasi Pengembalian'),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text("Apakah data pengembalian sudah benar?"),
-                  const SizedBox(height: 16),
-                  _buildConfirmationInfoRow(
-                    label: "Peminjam",
-                    value: _loggedInUserName,
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Konfirmasi Pengembalian'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text("Apakah data pengembalian sudah benar?"),
+                const SizedBox(height: 16),
+                _buildConfirmationInfoRow(
+                  label: "Peminjam",
+                  value: _loggedInUserName,
+                ),
+                _buildConfirmationInfoRow(
+                  label: "Tanggal Kembali",
+                  value: _formatTanggal(returnDate),
+                ),
+                _buildConfirmationInfoRow(
+                  label: "Gudang Tujuan",
+                  value: _selectedWarehouse,
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  "Barang yang dikembalikan:",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
                   ),
-                  _buildConfirmationInfoRow(
-                    label: "Tanggal Kembali",
-                    value: _formatTanggal(returnDate),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    "Barang yang dikembalikan:",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 14,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  ...selectedItems
-                      .map((item) => Padding(
-                            padding: const EdgeInsets.only(left: 8.0, top: 4),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    const Icon(Icons.circle,
-                                        size: 6, color: Colors.grey),
-                                    const SizedBox(width: 8),
-                                    Expanded(child: Text(item.name)),
-                                  ],
+                ),
+                const SizedBox(height: 4),
+                ...selectedItems
+                    .map((item) => Padding(
+                          padding: const EdgeInsets.only(left: 8.0, top: 4),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.circle,
+                                      size: 6, color: Colors.grey),
+                                  const SizedBox(width: 8),
+                                  Expanded(child: Text(item.name)),
+                                ],
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 14.0),
+                                child: Text(
+                                  "Kondisi: ${item.condition}",
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      color: item.condition == "Rusak"
+                                          ? Colors.red
+                                          : Colors.green,
+                                      fontWeight: FontWeight.w500),
                                 ),
+                              ),
+                              if (item.notes.isNotEmpty)
                                 Padding(
                                   padding: const EdgeInsets.only(left: 14.0),
                                   child: Text(
-                                    "Kondisi: ${item.condition}",
-                                    style: TextStyle(
+                                    "Catatan: ${item.notes}",
+                                    style: const TextStyle(
                                         fontSize: 12,
-                                        color: item.condition == "Rusak"
-                                            ? Colors.red
-                                            : Colors.green,
-                                        fontWeight: FontWeight.w500),
+                                        fontStyle: FontStyle.italic),
                                   ),
                                 ),
-                                if (item.notes.isNotEmpty)
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 14.0),
-                                    child: Text(
-                                      "Catatan: ${item.notes}",
-                                      style: const TextStyle(
-                                          fontSize: 12,
-                                          fontStyle: FontStyle.italic),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ))
-                      .toList(),
-                ],
+                            ],
+                          ),
+                        ))
+                    .toList(),
+              ],
+            ),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text(
+                'Periksa Kembali',
+                style: TextStyle(color: bmkgBlue),
               ),
             ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: bmkgBlue,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _submitForm();
+              },
+              child: const Text('Konfirmasi'),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text(
-                  'Periksa Kembali',
-                  style: TextStyle(color: bmkgBlue),
-                ),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: bmkgBlue,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  _submitForm();
-                },
-                child: const Text('Konfirmasi'),
-              ),
-            ],
-          );
-        });
+          ],
+        );
+      },
+    );
   }
 
   // Layout info konfirmasi
@@ -444,8 +496,11 @@ class _ReturnState extends State<ReturnPage> {
       // Kumpulkan ID barang yang akan dikembalikan
       final barangIds = selectedItems.map((item) => item.id).toList();
 
-      // Kirim request ke API dengan struktur baru
-      final requestBody = {"daftar_barang": barangIds};
+      // Kirim request ke API dengan struktur baru termasuk gudang
+      final requestBody = {
+        "daftar_barang": barangIds,
+        "gudang": _selectedWarehouse
+      };
 
       // Tambahkan token otorisasi jika diperlukan
       final prefs = await SharedPreferences.getInstance();
@@ -523,7 +578,7 @@ class _ReturnState extends State<ReturnPage> {
     }
   }
 
-// Tambahkan method helper untuk menampilkan snackbar kustom
+  // Tambahkan method helper untuk menampilkan snackbar kustom
   void _showCustomSnackBar({
     required String message,
     Color color = Colors.red,
@@ -648,7 +703,7 @@ class _ReturnState extends State<ReturnPage> {
                           ),
                         ),
 
-                        // Tanggal Pengembalian
+                        // Tanggal Pengembalian dan Gudang Tujuan
                         Padding(
                           padding: const EdgeInsets.all(16),
                           child: Card(
@@ -686,6 +741,54 @@ class _ReturnState extends State<ReturnPage> {
                                           ),
                                         ),
                                       ],
+                                    ),
+                                  ),
+
+                                  // Dropdown untuk Gudang Tujuan
+                                  const SizedBox(height: 20),
+                                  _buildFormLabel("Gudang Terakhir"),
+                                  const SizedBox(height: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                          color: Colors.grey.shade300),
+                                      color: Colors.white,
+                                    ),
+                                    child: DropdownButtonHideUnderline(
+                                      child: DropdownButton<String>(
+                                        isExpanded: true,
+                                        value: _selectedWarehouse,
+                                        icon: const Icon(Icons.arrow_drop_down,
+                                            color: bmkgBlue),
+                                        items: _warehouseOptions
+                                            .map((String warehouse) {
+                                          return DropdownMenuItem<String>(
+                                            value: warehouse,
+                                            child: Row(
+                                              children: [
+                                                const Icon(Icons.warehouse,
+                                                    color: bmkgBlue, size: 20),
+                                                const SizedBox(width: 12),
+                                                Text(
+                                                  warehouse,
+                                                  style: const TextStyle(
+                                                    fontSize: 15,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        }).toList(),
+                                        onChanged: (String? newValue) {
+                                          setState(() {
+                                            _selectedWarehouse = newValue!;
+                                            _validateForm();
+                                          });
+                                        },
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -805,7 +908,7 @@ class _ReturnState extends State<ReturnPage> {
                                                           fontSize: 14,
                                                         ),
                                                       ),
-                                                    ),
+                                                    )
                                                   ],
                                                 ),
                                               ))
@@ -968,7 +1071,7 @@ class _ReturnState extends State<ReturnPage> {
               selectedItems
                   .removeWhere((selectedItem) => selectedItem.id == item.id);
             } else {
-              selectedItems.add(item);
+              selectedItems.add(item.copyWith(condition: "Baik", notes: ""));
             }
             _validateForm();
           });
@@ -1209,61 +1312,6 @@ class _ReturnState extends State<ReturnPage> {
         fontWeight: FontWeight.w500,
         color: bmkgBlue,
       ),
-    );
-  }
-}
-
-// Helper function to extract value from different possible field names
-dynamic _extractValue(Map<String, dynamic> item, List<String> possibleKeys) {
-  for (var key in possibleKeys) {
-    if (item.containsKey(key) && item[key] != null) {
-      return item[key];
-    }
-  }
-  return null;
-}
-
-// Kelas model untuk item yang dipinjam
-class BorrowedItem {
-  final int id;
-  final String name;
-  final DateTime borrowedDate;
-  final String location;
-  final String borrowerName;
-  final String condition;
-  final String notes;
-  final bool isSelected;
-
-  BorrowedItem({
-    required this.id,
-    required this.name,
-    required this.borrowedDate,
-    required this.location,
-    required this.borrowerName,
-    required this.condition,
-    required this.notes,
-    required this.isSelected,
-  });
-
-  BorrowedItem copyWith({
-    int? id,
-    String? name,
-    DateTime? borrowedDate,
-    String? location,
-    String? borrowerName,
-    String? condition,
-    String? notes,
-    bool? isSelected,
-  }) {
-    return BorrowedItem(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      borrowedDate: borrowedDate ?? this.borrowedDate,
-      location: location ?? this.location,
-      borrowerName: borrowerName ?? this.borrowerName,
-      condition: condition ?? this.condition,
-      notes: notes ?? this.notes,
-      isSelected: isSelected ?? this.isSelected,
     );
   }
 }

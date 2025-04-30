@@ -74,8 +74,7 @@ class _ChooseItemState extends State<ChooseItemPage> {
 
   List<String> categories = ["Tersedia", "Terpinjam"];
   String selectedCategory = "Tersedia";
-  List<Map<String, dynamic>> selectedItems =
-      []; // Ubah ke List<Map> untuk menyimpan id dan nama barang
+  List<Map<String, dynamic>> selectedItems = [];
 
   List<InventoryItem> items = [];
   List<InventoryItem> filteredItems = [];
@@ -96,8 +95,6 @@ class _ChooseItemState extends State<ChooseItemPage> {
     _searchController.dispose();
     super.dispose();
   }
-
-  // Perbaikan fungsi _fetchInventoryItems() pada ChooseItemPage
 
   Future<void> _fetchInventoryItems() async {
     setState(() {
@@ -206,17 +203,44 @@ class _ChooseItemState extends State<ChooseItemPage> {
       print('Scanning result: $result'); // Debug print
 
       if (result != null) {
-        // Cari barang berdasarkan QR/barcode
-        final matchingItems = items.where((item) => item.qr == result).toList();
+        // Coba cari item berdasarkan qr code terlebih dahulu
+        final matchingItemsByQR =
+            items.where((item) => item.qr == result).toList();
+
+        // Jika tidak ditemukan, coba cari berdasarkan ID
+        final matchingItemsById =
+            items.where((item) => item.id.toString() == result).toList();
+
+        // Gabungkan hasil pencarian
+        final matchingItems = [...matchingItemsByQR, ...matchingItemsById];
 
         print('Matching items: ${matchingItems.length}'); // Debug print
 
         if (matchingItems.isNotEmpty) {
+          // Ambil item pertama yang cocok
           InventoryItem scannedItem = matchingItems.first;
 
-          // Periksa status barang sebelum konfirmasi
+          // Tampilkan toast ketika menemukan item
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Menemukan barang: ${scannedItem.nama}'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 1),
+          ));
+
+          // Periksa status barang
           if (scannedItem.status.toLowerCase() == 'tersedia') {
-            _confirmSelection(scannedItem);
+            // Pilih item secara otomatis
+            _autoSelectScannedItem(scannedItem);
+
+            // Scroll ke posisi item yang dipilih
+            final itemIndex =
+                filteredItems.indexWhere((item) => item.id == scannedItem.id);
+            if (itemIndex >= 0) {
+              // Add small delay to ensure UI has updated
+              Future.delayed(const Duration(milliseconds: 300), () {
+                // Scroll implementation would go here if you have a ScrollController
+              });
+            }
           } else {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
               content: Text('Barang ${scannedItem.nama} terpinjam'),
@@ -226,13 +250,83 @@ class _ChooseItemState extends State<ChooseItemPage> {
         } else {
           // Tampilkan dialog jika barang tidak ditemukan
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('Barang dengan barcode $result tidak ditemukan'),
+            content: Text('Barang dengan kode $result tidak ditemukan'),
             backgroundColor: Colors.red,
           ));
         }
       }
     } catch (e) {
       print('Error in scanning: $e'); // Error logging
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Terjadi kesalahan: $e'),
+        backgroundColor: Colors.red,
+      ));
+    }
+  }
+
+  // Fungsi untuk memilih item secara otomatis setelah scan
+  void _autoSelectScannedItem(InventoryItem item) {
+    try {
+      // Periksa status item
+      if (item.status.toLowerCase() != "tersedia") {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Barang ${item.nama} tidak tersedia untuk dipinjam'),
+          backgroundColor: Colors.orange,
+        ));
+        return;
+      }
+
+      final cartProvider = Provider.of<CartProvider>(context, listen: false);
+
+      // Cek apakah item sudah ada di keranjang
+      bool isAlreadySelected =
+          selectedItems.any((element) => element['id'] == item.id);
+
+      if (isAlreadySelected) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Barang ${item.nama} sudah dipilih'),
+          backgroundColor: Colors.blue,
+          duration: const Duration(seconds: 1),
+        ));
+        return;
+      }
+
+      // Cek apakah keranjang masih bisa menampung item baru
+      if (cartProvider.canAddItem()) {
+        // Buat data item
+        Map<String, dynamic> itemData = {
+          'id': item.id,
+          'nama': item.nama,
+        };
+
+        // Tambahkan ke keranjang
+        cartProvider.addItem(itemData);
+
+        // Update state
+        setState(() {
+          selectedItems = List.from(cartProvider.items);
+          // Pastikan kategori diset ke "Tersedia" agar barang terlihat
+          selectedCategory = "Tersedia";
+          _filterItems();
+        });
+
+        // Tampilkan notifikasi sukses
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Barang ${item.nama} berhasil ditambahkan'),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 1),
+        ));
+      } else {
+        // Tampilkan pesan jika keranjang penuh
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Keranjang sudah penuh. Maksimal 10 barang.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error in auto select: $e');
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Terjadi kesalahan: $e'),
         backgroundColor: Colors.red,
@@ -260,10 +354,6 @@ class _ChooseItemState extends State<ChooseItemPage> {
       Navigator.pop(context, cartProvider.items);
     }
   }
-
-  // Modify the _confirmSelection method to update selectedItems:
-
-  // Modify the _confirmSelection method to check for item availability:
 
   void _confirmSelection(InventoryItem item) {
     try {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
 class ScanPage extends StatefulWidget {
@@ -9,20 +10,18 @@ class ScanPage extends StatefulWidget {
 }
 
 class _ScanState extends State<ScanPage> {
-  // Definisi warna BMKG yang konsisten dengan halaman lain
   static const Color bmkgBlue = Color(0xFF0D47A1);
   static const Color bmkgLightBlue = Color(0xFF1976D2);
-  
+
   final GlobalKey qrKey = GlobalKey(debugLabel: 'qr');
   QRViewController? controller;
   String scannedData = "";
   bool _isFlashOn = false;
+  bool _hasProcessedScan = false;
 
   @override
   void reassemble() {
     super.reassemble();
-    // This is called when the app is reloaded during development
-    // Needed for hot reload to work with QR view
     if (controller != null) {
       controller!.pauseCamera();
       controller!.resumeCamera();
@@ -38,14 +37,26 @@ class _ScanState extends State<ScanPage> {
   void _onQRViewCreated(QRViewController controller) {
     this.controller = controller;
     controller.scannedDataStream.listen((scanData) {
-      setState(() {
-        scannedData = scanData.code ?? "";
-      });
-      Navigator.pop(context, scannedData);
+      if (mounted && !_hasProcessedScan) {
+        setState(() {
+          scannedData = scanData.code ?? "";
+          _hasProcessedScan = true;  // Set flag to avoid multiple processing
+        });
+        
+        // Automatic navigation after scan
+        if (scannedData.isNotEmpty) {
+          // Vibrate to indicate successful scan
+          HapticFeedback.mediumImpact();
+          
+          // Brief delay to show the scanned data before returning
+          Future.delayed(const Duration(milliseconds: 800), () {
+            Navigator.pop(context, scannedData);
+          });
+        }
+      }
     });
   }
 
-  // Toggle flash/torch
   void _toggleFlash() async {
     if (controller != null) {
       await controller!.toggleFlash();
@@ -62,10 +73,7 @@ class _ScanState extends State<ScanPage> {
       appBar: AppBar(
         title: const Text(
           'Scan Barcode/QR',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
         ),
         centerTitle: true,
         backgroundColor: bmkgBlue,
@@ -79,7 +87,7 @@ class _ScanState extends State<ScanPage> {
       ),
       body: Column(
         children: <Widget>[
-          // Informative header
+          // Header
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
@@ -136,13 +144,13 @@ class _ScanState extends State<ScanPage> {
             ),
           ),
 
-          // QR View
+          // Kamera QR Scanner
           Expanded(
             flex: 5,
             child: Stack(
               children: [
                 QRView(
-                  key: qrKey, 
+                  key: qrKey,
                   onQRViewCreated: _onQRViewCreated,
                   overlay: QrScannerOverlayShape(
                     borderColor: bmkgBlue,
@@ -152,14 +160,13 @@ class _ScanState extends State<ScanPage> {
                     cutOutSize: MediaQuery.of(context).size.width * 0.8,
                   ),
                 ),
-                
-                // Scan area indicator
                 Center(
                   child: Container(
                     width: MediaQuery.of(context).size.width * 0.8,
                     height: MediaQuery.of(context).size.width * 0.8,
                     decoration: BoxDecoration(
-                      border: Border.all(color: bmkgBlue.withOpacity(0.5), width: 2),
+                      border: Border.all(
+                          color: bmkgBlue.withOpacity(0.5), width: 2),
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
@@ -168,7 +175,74 @@ class _ScanState extends State<ScanPage> {
             ),
           ),
 
-          // Controls
+          // Hasil Scan (modern style)
+          Expanded(
+            flex: 1,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              color: Colors.white,
+              child: scannedData.isNotEmpty
+                  ? AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOut,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade50,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.blue.shade100.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.check_circle,
+                              color: bmkgBlue, size: 28),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              "Berhasil Scan: $scannedData",
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: bmkgBlue,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 3,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          IconButton(
+                            onPressed: () {
+                              Clipboard.setData(
+                                  ClipboardData(text: scannedData));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Disalin ke clipboard'),
+                                  duration: Duration(seconds: 1),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.copy,
+                                size: 20, color: bmkgBlue),
+                          ),
+                        ],
+                      ),
+                    )
+                  : const Center(
+                      child: Text(
+                        'Belum ada hasil scan',
+                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                      ),
+                    ),
+            ),
+          ),
+
+          // Tombol Flash Stylish
           Container(
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
             decoration: BoxDecoration(
@@ -185,18 +259,23 @@ class _ScanState extends State<ScanPage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Flash Toggle Button
-                ElevatedButton(
+                ElevatedButton.icon(
                   onPressed: _toggleFlash,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _isFlashOn ? bmkgBlue : Colors.grey[300],
-                    shape: CircleBorder(),
-                    padding: const EdgeInsets.all(12),
-                  ),
-                  child: Icon(
+                  icon: Icon(
                     _isFlashOn ? Icons.flash_on : Icons.flash_off,
                     color: Colors.white,
-                    size: 24,
+                  ),
+                  label: Text(
+                    _isFlashOn ? 'Matikan Flash' : 'Nyalakan Flash',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: bmkgBlue,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
                   ),
                 ),
               ],
