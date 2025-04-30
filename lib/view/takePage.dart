@@ -20,8 +20,7 @@ class _TakeState extends State<TakePage> {
   String _loggedInUserName = "Memuat..."; // Default value while loading
   int _userId = 0; // Menyimpan ID user yang login
   DateTime selectedDate = DateTime.now();
-  List<Map<String, dynamic>> selectedItems =
-      []; // Ubah ke Map untuk menyimpan nama dan ID
+  List<Map<String, dynamic>> selectedItems = []; // Ubah ke Map untuk menyimpan nama, ID, dan jumlah
   bool _isFormValid = false;
   bool _isLoading = true;
   bool _isSubmitting = false; // Flag untuk proses submit
@@ -64,8 +63,7 @@ class _TakeState extends State<TakePage> {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _loggedInUserName = prefs.getString('username') ?? 'Pengguna';
-      _userId = prefs.getInt('user_id') ??
-          0; // Mengambil user_id dari SharedPreferences
+      _userId = prefs.getInt('user_id') ?? 0; // Mengambil user_id dari SharedPreferences
       _validateForm(); // Validate form after loading username
     });
   }
@@ -168,7 +166,9 @@ class _TakeState extends State<TakePage> {
                               const Icon(Icons.circle,
                                   size: 6, color: Colors.grey),
                               const SizedBox(width: 8),
-                              Text(item['nama']),
+                              Expanded(
+                                child: Text("${item['nama']} (${item['jumlah']} item)"),
+                              ),
                             ],
                           ),
                         ))
@@ -232,7 +232,7 @@ class _TakeState extends State<TakePage> {
     );
   }
 
-  // Submit form - Mengirim data ke API
+  // Submit form - Mengirim data ke API dengan format yang baru
   Future<void> _submitForm() async {
     // Cek jika user_id tidak valid
     if (_userId <= 0) {
@@ -264,24 +264,35 @@ class _TakeState extends State<TakePage> {
     });
 
     try {
-      // Ekstrak ID barang yang dipilih
-      List<int> itemIds =
-          selectedItems.map<int>((item) => item['id'] as int).toList();
+      // Ekstrak ID barang dan jumlah yang dipilih
+      List<int> itemIds = selectedItems.map<int>((item) => item['id'] as int).toList();
+      List<int> itemJumlah = selectedItems.map<int>((item) => item['jumlah'] as int).toList();
 
-      // Persiapkan data untuk dikirim ke API
-      final requestBody = {"id_user": _userId, "daftar_barang": itemIds};
+      // Persiapkan data untuk dikirim ke API sesuai format yang diminta
+      final requestBody = {
+        "id_user": _userId,
+        "id_barang": itemIds,
+        "jumlah": itemJumlah
+      };
+
+      // Tampilkan data yang akan dikirim untuk keperluan debugging
+      print("Sending data: ${jsonEncode(requestBody)}");
 
       // Kirim request ke API
       final response = await http.post(
-        Uri.parse('http://api-bmkg.athaland.my.id/api/multi'),
+        Uri.parse('http://api-bmkg.athaland.my.id/api/ambilmulti'),
         headers: {
           'Content-Type': 'application/json',
         },
         body: jsonEncode(requestBody),
       );
 
+      // Debug response
+      print("API Response status: ${response.statusCode}");
+      print("API Response body: ${response.body}");
+
       // Cek status response
-      if (response.statusCode == 207 || response.statusCode == 201) {
+      if (response.statusCode == 200 || response.statusCode == 201 || response.statusCode == 207) {
         // Sukses
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -641,7 +652,7 @@ class _TakeState extends State<TakePage> {
                                 padding: const EdgeInsets.only(
                                     left: 4.0, bottom: 8.0),
                                 child: Text(
-                                  "${selectedItems.length} barang dipilih",
+                                  "${selectedItems.length} barang dipilih (${selectedItems.fold(0, (sum, item) => sum + (item['jumlah'] as int))} item)",
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500,
@@ -689,6 +700,13 @@ class _TakeState extends State<TakePage> {
                                             item['nama'],
                                             style: const TextStyle(
                                               fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          subtitle: Text(
+                                            "Jumlah: ${item['jumlah']} item",
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.grey[600],
                                             ),
                                           ),
                                           trailing: IconButton(
@@ -759,7 +777,7 @@ class _TakeState extends State<TakePage> {
                                   ),
                                 ),
                                 child: _isSubmitting
-                                    ? CircularProgressIndicator(
+                                    ? const CircularProgressIndicator(
                                         color: Colors.white)
                                     : const Text(
                                         'Simpan Pengambilan',
