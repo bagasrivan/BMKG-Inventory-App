@@ -73,6 +73,13 @@ class _ReturnState extends State<ReturnPage> {
 
   // Tambahkan variabel untuk gudang
   String _selectedWarehouse = "Tata Usaha"; // Default value
+
+  // Tetapkan nilai default gudang yang akan selalu tersedia
+  final List<String> _defaultWarehouses = [
+    "Tata Usaha",
+    "Radar",
+    "Operasional"
+  ];
   List<String> _warehouseOptions = ["Tata Usaha", "Radar", "Operasional"];
 
   // Nama bulan dalam bahasa Indonesia
@@ -91,20 +98,15 @@ class _ReturnState extends State<ReturnPage> {
     'Desember'
   ];
 
-  // Metode untuk mendapatkan gudang unik
-  List<String> _getUniqueWarehouses(List<dynamic> items) {
-    final uniqueWarehouses = <String>{};
+  // Metode untuk menggabungkan gudang dari API dengan gudang default
+  List<String> _mergeWarehouses(List<dynamic> items) {
+    final Set<String> uniqueWarehouses = _defaultWarehouses.toSet();
 
+    // Tambahkan gudang dari API jika ada
     for (var item in items) {
       if (item is Map && item['gudang'] != null) {
         uniqueWarehouses.add(item['gudang'].toString());
       }
-    }
-
-    // Tambahkan default jika tidak ada gudang ditemukan
-    if (uniqueWarehouses.isEmpty) {
-      uniqueWarehouses
-          .addAll(["Gudang Utama", "Stasiun", "Kantor Pusat", "Laboratorium"]);
     }
 
     return uniqueWarehouses.toList();
@@ -165,11 +167,12 @@ class _ReturnState extends State<ReturnPage> {
               return _mapToBorrowedItem(item);
             }).toList();
 
-            // Update warehouse options dari data yang diparsing
-            _warehouseOptions = _getUniqueWarehouses(responseBody);
+            // Merge warehouses from API with default warehouses
+            _warehouseOptions = _mergeWarehouses(responseBody);
 
-            // Set default warehouse ke pilihan pertama
-            if (_warehouseOptions.isNotEmpty) {
+            // Set default warehouse ke pilihan pertama jika sebelumnya tidak valid
+            if (!_warehouseOptions.contains(_selectedWarehouse) &&
+                _warehouseOptions.isNotEmpty) {
               _selectedWarehouse = _warehouseOptions.first;
             }
           });
@@ -441,7 +444,8 @@ class _ReturnState extends State<ReturnPage> {
                 Navigator.of(context).pop();
                 _submitForm();
               },
-              child: const Text('Konfirmasi'),
+              child: const Text('Konfirmasi',
+                  style: TextStyle(color: Colors.white)),
             ),
           ],
         );
@@ -744,7 +748,7 @@ class _ReturnState extends State<ReturnPage> {
                                     ),
                                   ),
 
-                                  // Dropdown untuk Gudang Tujuan
+                                  // Dropdown untuk Gudang Tujuan - Selalu menampilkan 3 pilihan
                                   const SizedBox(height: 20),
                                   _buildFormLabel("Gudang Terakhir"),
                                   const SizedBox(height: 8),
@@ -763,7 +767,7 @@ class _ReturnState extends State<ReturnPage> {
                                         value: _selectedWarehouse,
                                         icon: const Icon(Icons.arrow_drop_down,
                                             color: bmkgBlue),
-                                        items: _warehouseOptions
+                                        items: _defaultWarehouses
                                             .map((String warehouse) {
                                           return DropdownMenuItem<String>(
                                             value: warehouse,
@@ -948,9 +952,9 @@ class _ReturnState extends State<ReturnPage> {
                                         : const Text(
                                             'Proses Pengembalian',
                                             style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                            ),
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white),
                                           ),
                                   ),
                                 ),
@@ -1017,7 +1021,7 @@ class _ReturnState extends State<ReturnPage> {
               onPressed: () {
                 _fetchBorrowedItems();
               },
-              backgroundColor: bmkgBlue,
+              backgroundColor: Colors.white,
               child: const Icon(Icons.refresh),
             )
           : null,
@@ -1079,179 +1083,96 @@ class _ReturnState extends State<ReturnPage> {
         borderRadius: BorderRadius.circular(10),
         child: Padding(
           padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? bmkgBlue.withOpacity(0.2)
-                          : bmkgLightBlue.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      isSelected ? Icons.check_circle : Icons.inventory_2,
-                      color: isSelected ? bmkgBlue : bmkgLightBlue,
-                      size: 20,
-                    ),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? bmkgBlue.withOpacity(0.2)
+                        : bmkgLightBlue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          item.name,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            fontSize: 15,
-                            color: isSelected ? bmkgBlue : Colors.black87,
-                          ),
-                        ),
-                        Text(
-                          "ID Barang: ${item.id}",
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(
-                    isSelected
-                        ? Icons.check_circle
-                        : Icons.radio_button_unchecked,
-                    color: isSelected ? Colors.green : Colors.grey,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-
-              // Information about the borrowing
-              Row(
-                children: [
-                  Icon(Icons.person, size: 16, color: Colors.grey[600]),
-                  const SizedBox(width: 6),
-                  Text(
-                    item.borrowerName,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey[700],
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Icon(Icons.location_on, size: 16, color: Colors.grey[600]),
-                  const SizedBox(width: 6),
-                  Text(
-                    item.location,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey[700],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Row(
-                children: [
-                  Icon(Icons.calendar_today, size: 16, color: Colors.grey[600]),
-                  const SizedBox(width: 6),
-                  Text(
-                    "Dipinjam: ${_formatTanggal(item.borrowedDate)}",
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey[700],
-                    ),
-                  ),
-                ],
-              ),
-
-              // Condition selection (only show if item is selected)
-              if (isSelected) ...[
-                const Divider(height: 20),
-                const Text(
-                  "Kondisi Barang:",
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: bmkgBlue,
+                  child: Icon(
+                    isSelected ? Icons.check_circle : Icons.inventory_2,
+                    color: isSelected ? bmkgBlue : bmkgLightBlue,
+                    size: 20,
                   ),
                 ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    _buildConditionRadio(
-                        selectedItems.indexWhere(
-                            (selectedItem) => selectedItem.id == item.id),
-                        "Baik"),
-                    const SizedBox(width: 16),
-                    _buildConditionRadio(
-                        selectedItems.indexWhere(
-                            (selectedItem) => selectedItem.id == item.id),
-                        "Rusak"),
-                  ],
-                ),
-
-                // Notes field (if condition is "Rusak")
-                if (selectedItems.any((selectedItem) =>
-                    selectedItem.id == item.id &&
-                    selectedItem.condition == "Rusak"))
-                  Column(
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 12),
-                      const Text(
-                        "Catatan:",
+                      Text(
+                        item.name,
                         style: TextStyle(
-                          fontSize: 14,
                           fontWeight: FontWeight.w500,
-                          color: bmkgBlue,
+                          fontSize: 15,
+                          color: isSelected ? bmkgBlue : Colors.black87,
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      TextField(
-                        onChanged: (value) {
-                          setState(() {
-                            final index = selectedItems.indexWhere(
-                                (selectedItem) => selectedItem.id == item.id);
-                            if (index != -1) {
-                              selectedItems[index] =
-                                  selectedItems[index].copyWith(notes: value);
-                              _validateForm();
-                            }
-                          });
-                        },
-                        decoration: InputDecoration(
-                          hintText: "Deskripsikan kerusakan barang",
-                          hintStyle:
-                              TextStyle(fontSize: 13, color: Colors.grey[400]),
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 12),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: Colors.grey.shade300),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: Colors.grey.shade300),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: bmkgBlue),
-                          ),
+                      Text(
+                        "ID Barang: ${item.id}",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
                         ),
-                        maxLines: 2,
-                        style: const TextStyle(fontSize: 13),
                       ),
                     ],
                   ),
+                ),
+                Icon(
+                  isSelected
+                      ? Icons.check_circle
+                      : Icons.radio_button_unchecked,
+                  color: isSelected ? Colors.green : Colors.grey,
+                ),
               ],
-            ],
-          ),
+            ),
+            const SizedBox(height: 10),
+
+            // Information about the borrowing
+            Row(
+              children: [
+                Icon(Icons.person, size: 16, color: Colors.grey[600]),
+                const SizedBox(width: 6),
+                Text(
+                  item.borrowerName,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey[700],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Icon(Icons.location_on, size: 16, color: Colors.grey[600]),
+                const SizedBox(width: 6),
+                Text(
+                  item.location,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey[700],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                Icon(Icons.calendar_today, size: 16, color: Colors.grey[600]),
+                const SizedBox(width: 6),
+                Text(
+                  "Dipinjam: ${_formatTanggal(item.borrowedDate)}",
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey[700],
+                  ),
+                ),
+              ],
+            ),
+          ]),
         ),
       ),
     );

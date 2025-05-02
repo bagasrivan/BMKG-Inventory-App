@@ -38,6 +38,12 @@ dependencies:
   provider: ^6.0.5
   cupertino_icons: ^1.0.8
   permission_handler: ^11.0.0
+  flutter_launcher_icons: ^0.13.1
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon.png"
 
 
 dev_dependencies:
@@ -70,6 +76,7 @@ flutter:
   - assets/car.png
   - assets/printer.png
   - assets/tanggalipat.png
+  - assets/icon.png
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

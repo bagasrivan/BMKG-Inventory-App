@@ -22,7 +22,8 @@ class _AddState extends State<AddPage> {
   String _loggedInUserName = "Memuat..."; // Default value while loading
   int _userId = 0; // Menyimpan ID user yang login
   DateTime selectedDate = DateTime.now();
-  List<Map<String, dynamic>> selectedItems = []; // Ubah ke Map untuk menyimpan nama dan ID
+  List<Map<String, dynamic>> selectedItems =
+      []; // Ubah ke Map untuk menyimpan nama dan ID
   bool _isFormValid = false;
   bool _isLoading = true;
   bool _isSubmitting = false; // Flag untuk proses submit
@@ -30,8 +31,18 @@ class _AddState extends State<AddPage> {
 
   // Nama bulan dalam bahasa Indonesia
   final List<String> _namabulan = [
-    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    'Januari',
+    'Februari',
+    'Maret',
+    'April',
+    'Mei',
+    'Juni',
+    'Juli',
+    'Agustus',
+    'September',
+    'Oktober',
+    'November',
+    'Desember'
   ];
 
   final List<String> locations = ["Operasional", "Tata Usaha", "Radar"];
@@ -72,7 +83,8 @@ class _AddState extends State<AddPage> {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _loggedInUserName = prefs.getString('username') ?? 'Pengguna';
-      _userId = prefs.getInt('user_id') ?? 0; // Mengambil user_id dari SharedPreferences
+      _userId = prefs.getInt('user_id') ??
+          0; // Mengambil user_id dari SharedPreferences
       _validateForm(); // Validate form after loading username
     });
   }
@@ -101,7 +113,8 @@ class _AddState extends State<AddPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Konfirmasi Hapus Barang'),
-          content: const Text("Apakah Anda yakin ingin menghapus barang ini dari daftar peminjaman?"),
+          content: const Text(
+              "Apakah Anda yakin ingin menghapus barang ini dari daftar peminjaman?"),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -202,7 +215,8 @@ class _AddState extends State<AddPage> {
                         padding: const EdgeInsets.only(left: 8.0, top: 4),
                         child: Row(
                           children: [
-                            const Icon(Icons.circle, size: 6, color: Colors.grey),
+                            const Icon(Icons.circle,
+                                size: 6, color: Colors.grey),
                             const SizedBox(width: 8),
                             Text(item['nama']),
                           ],
@@ -233,7 +247,10 @@ class _AddState extends State<AddPage> {
                 Navigator.of(context).pop();
                 _submitForm();
               },
-              child: const Text('Konfirmasi'),
+              child: const Text(
+                'Konfirmasi',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         );
@@ -241,7 +258,8 @@ class _AddState extends State<AddPage> {
     );
   }
 
-  Widget _buildConfirmationInfoRow({required String label, required String value}) {
+  Widget _buildConfirmationInfoRow(
+      {required String label, required String value}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
       child: Row(
@@ -279,7 +297,8 @@ class _AddState extends State<AddPage> {
           cartProvider.clearItems();
         } catch (e) {
           // If clearItems doesn't exist, remove items one by one
-          List<Map<String, dynamic>> itemsToRemove = List.from(cartProvider.items);
+          List<Map<String, dynamic>> itemsToRemove =
+              List.from(cartProvider.items);
           for (var item in itemsToRemove) {
             if (item.containsKey('id')) {
               cartProvider.removeItem(item['id']);
@@ -335,7 +354,8 @@ class _AddState extends State<AddPage> {
 
     try {
       // Ekstrak ID barang yang dipilih
-      List<int> itemIds = selectedItems.map<int>((item) => item['id'] as int).toList();
+      List<int> itemIds =
+          selectedItems.map<int>((item) => item['id'] as int).toList();
 
       // Persiapkan data untuk dikirim ke API
       final requestBody = {"id_user": _userId, "daftar_barang": itemIds};
@@ -388,7 +408,8 @@ class _AddState extends State<AddPage> {
       } else {
         // Error dari server
         Map<String, dynamic> errorResponse = jsonDecode(response.body);
-        throw Exception(errorResponse['message'] ?? 'Gagal menyimpan peminjaman');
+        throw Exception(
+            errorResponse['message'] ?? 'Gagal menyimpan peminjaman');
       }
     } catch (e) {
       // Error handling
@@ -529,7 +550,8 @@ class _AddState extends State<AddPage> {
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: const [
                                         Text(
                                           'Form Peminjaman Barang',
@@ -585,14 +607,17 @@ class _AddState extends State<AddPage> {
                                     child: DropdownButtonFormField<String>(
                                       value: selectedLocation,
                                       hint: const Text("Pilih Lokasi"),
-                                      icon: const Icon(Icons.arrow_drop_down, color: bmkgBlue),
+                                      icon: const Icon(Icons.arrow_drop_down,
+                                          color: bmkgBlue),
                                       decoration: const InputDecoration(
-                                        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: 16, vertical: 14),
                                         border: InputBorder.none,
                                       ),
                                       isExpanded: true,
                                       items: locations
-                                          .map((loc) => DropdownMenuItem(value: loc, child: Text(loc)))
+                                          .map((loc) => DropdownMenuItem(
+                                              value: loc, child: Text(loc)))
                                           .toList(),
                                       onChanged: (value) {
                                         setState(() {
@@ -609,15 +634,18 @@ class _AddState extends State<AddPage> {
                                   _buildFormLabel("Nama Peminjam"),
                                   const SizedBox(height: 8),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 14),
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: Colors.grey.shade300),
+                                      border: Border.all(
+                                          color: Colors.grey.shade300),
                                       color: Colors.grey.shade50,
                                     ),
                                     child: Row(
                                       children: [
-                                        const Icon(Icons.person, color: bmkgBlue),
+                                        const Icon(Icons.person,
+                                            color: bmkgBlue),
                                         const SizedBox(width: 12),
                                         Text(
                                           _loggedInUserName,
@@ -635,15 +663,19 @@ class _AddState extends State<AddPage> {
                                   _buildFormLabel("Tanggal Peminjaman"),
                                   const SizedBox(height: 8),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 14),
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: Colors.grey.shade300),
-                                      color: Colors.grey.shade50, // Background abu-abu muda untuk menunjukkan field tidak aktif
+                                      border: Border.all(
+                                          color: Colors.grey.shade300),
+                                      color: Colors.grey
+                                          .shade50, // Background abu-abu muda untuk menunjukkan field tidak aktif
                                     ),
                                     child: Row(
                                       children: [
-                                        const Icon(Icons.calendar_today, color: bmkgBlue),
+                                        const Icon(Icons.calendar_today,
+                                            color: bmkgBlue),
                                         const SizedBox(width: 12),
                                         Text(
                                           _formatTanggal(DateTime.now()),
@@ -659,7 +691,8 @@ class _AddState extends State<AddPage> {
 
                                   // Barang yang dipinjam
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       _buildFormLabel("Barang yang Dipinjam"),
                                       ElevatedButton.icon(
@@ -670,9 +703,11 @@ class _AddState extends State<AddPage> {
                                           backgroundColor: bmkgBlue,
                                           foregroundColor: Colors.white,
                                           shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(20),
+                                            borderRadius:
+                                                BorderRadius.circular(20),
                                           ),
-                                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 16, vertical: 8),
                                           textStyle: const TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.w500,
@@ -696,7 +731,8 @@ class _AddState extends State<AddPage> {
                             children: [
                               if (selectedItems.isNotEmpty)
                                 Padding(
-                                  padding: const EdgeInsets.only(left: 4.0, bottom: 8.0),
+                                  padding: const EdgeInsets.only(
+                                      left: 4.0, bottom: 8.0),
                                   child: Text(
                                     "${selectedItems.length} barang dipilih",
                                     style: TextStyle(
@@ -709,25 +745,34 @@ class _AddState extends State<AddPage> {
 
                               selectedItems.isNotEmpty
                                   ? ListView.builder(
-                                      physics: const NeverScrollableScrollPhysics(),
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
                                       shrinkWrap: true,
                                       itemCount: selectedItems.length,
                                       itemBuilder: (context, index) {
                                         final item = selectedItems[index];
                                         return Card(
-                                          margin: const EdgeInsets.only(bottom: 8),
+                                          margin:
+                                              const EdgeInsets.only(bottom: 8),
                                           elevation: 1,
-                                          shadowColor: Colors.black.withOpacity(0.1),
+                                          shadowColor:
+                                              Colors.black.withOpacity(0.1),
                                           shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(12),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
                                           ),
                                           child: ListTile(
-                                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                            contentPadding:
+                                                const EdgeInsets.symmetric(
+                                                    horizontal: 16,
+                                                    vertical: 8),
                                             leading: Container(
                                               padding: const EdgeInsets.all(8),
                                               decoration: BoxDecoration(
-                                                color: bmkgLightBlue.withOpacity(0.1),
-                                                borderRadius: BorderRadius.circular(8),
+                                                color: bmkgLightBlue
+                                                    .withOpacity(0.1),
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
                                               ),
                                               child: const Icon(
                                                 Icons.inventory_2,
@@ -741,9 +786,11 @@ class _AddState extends State<AddPage> {
                                               ),
                                             ),
                                             trailing: IconButton(
-                                              icon: const Icon(Icons.delete_outline),
+                                              icon: const Icon(
+                                                  Icons.delete_outline),
                                               color: Colors.red,
-                                              onPressed: () => _confirmDelete(item),
+                                              onPressed: () =>
+                                                  _confirmDelete(item),
                                             ),
                                           ),
                                         );
@@ -794,7 +841,9 @@ class _AddState extends State<AddPage> {
                                 width: double.infinity,
                                 height: 50,
                                 child: ElevatedButton(
-                                  onPressed: _isFormValid && !_isSubmitting ? _confirmSubmit : null,
+                                  onPressed: _isFormValid && !_isSubmitting
+                                      ? _confirmSubmit
+                                      : null,
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: bmkgBlue,
                                     disabledBackgroundColor: Colors.grey[300],
@@ -804,20 +853,22 @@ class _AddState extends State<AddPage> {
                                     ),
                                   ),
                                   child: _isSubmitting
-                                      ? CircularProgressIndicator(color: Colors.white)
+                                      ? CircularProgressIndicator(
+                                          color: Colors.white)
                                       : const Text(
                                           'Simpan Peminjaman',
                                           style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white),
                                         ),
                                 ),
                               ),
 
                               // Footer
                               Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 20),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 20),
                                 child: Center(
                                   child: Text(
                                     'Pastikan data yang dimasukkan sudah benar',

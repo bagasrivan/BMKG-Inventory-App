@@ -4,6 +4,7 @@ import 'package:bmkg_inventory_system/view/inventoryPage.dart';
 import 'package:bmkg_inventory_system/view/profilePage.dart';
 import 'package:bmkg_inventory_system/view/returnPage.dart';
 import 'package:bmkg_inventory_system/view/scanPage.dart';
+import 'package:bmkg_inventory_system/view/takePage.dart';
 import 'package:flutter/material.dart';
 
 class Navigation extends StatefulWidget {
@@ -184,6 +185,16 @@ class _NavigationState extends State<Navigation> {
                 },
               ),
               _buildQuickActionButton(
+                icon: Icons.edit_note,
+                label: 'Pengambilan ATK',
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const TakePage()));
+                },
+              ),
+              _buildQuickActionButton(
                 icon: Icons.assignment_return,
                 label: 'Pengembalian Barang',
                 onTap: () {
@@ -191,16 +202,6 @@ class _NavigationState extends State<Navigation> {
                       context,
                       MaterialPageRoute(
                           builder: (context) => const ReturnPage()));
-                },
-              ),
-              _buildQuickActionButton(
-                icon: Icons.qr_code_scanner,
-                label: 'Scan Kode QR',
-                onTap: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const ScanPage()));
                 },
               ),
             ],

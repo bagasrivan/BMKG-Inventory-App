@@ -197,7 +197,7 @@ class _TakeState extends State<TakePage> {
                   Navigator.of(context).pop();
                   _submitForm();
                 },
-                child: const Text('Konfirmasi'),
+                child: const Text('Konfirmasi', style: TextStyle(color: Colors.white),),
               ),
             ],
           );
@@ -784,6 +784,7 @@ class _TakeState extends State<TakePage> {
                                         style: TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
+                                          color: Colors.white
                                         ),
                                       ),
                               ),
