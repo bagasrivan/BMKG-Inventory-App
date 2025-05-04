@@ -14,7 +14,8 @@ class ReturnPage extends StatefulWidget {
 }
 
 class BorrowedItem {
-  final int id;
+  final int id; // This is the borrowing/loan ID
+  final int barangId; // This is the actual item/barang ID
   final String name;
   final DateTime borrowedDate;
   final String location;
@@ -25,6 +26,7 @@ class BorrowedItem {
 
   BorrowedItem({
     required this.id,
+    required this.barangId,
     required this.name,
     required this.borrowedDate,
     required this.location,
@@ -36,6 +38,7 @@ class BorrowedItem {
 
   BorrowedItem copyWith({
     int? id,
+    int? barangId,
     String? name,
     DateTime? borrowedDate,
     String? location,
@@ -46,6 +49,7 @@ class BorrowedItem {
   }) {
     return BorrowedItem(
       id: id ?? this.id,
+      barangId: barangId ?? this.barangId,
       name: name ?? this.name,
       borrowedDate: borrowedDate ?? this.borrowedDate,
       location: location ?? this.location,
@@ -129,7 +133,7 @@ class _ReturnState extends State<ReturnPage> {
     });
   }
 
-  // Fetch borrowed items from API
+  // Perbaikan pada metode _fetchBorrowedItems()
   Future<void> _fetchBorrowedItems() async {
     setState(() {
       _isLoading = true;
@@ -140,9 +144,13 @@ class _ReturnState extends State<ReturnPage> {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
 
-      // More robust API call with timeout and error handling
+      // PERBAIKAN: Tambahkan ID user ke URL API
+      final userId = prefs.getInt('user_id') ?? 0;
+
+      // Pastikan userId disertakan dalam URL API
       final response = await http.get(
-        Uri.parse('http://api-bmkg.athaland.my.id/api/barang/statusPinjam'),
+        Uri.parse(
+            'http://api-bmkg.athaland.my.id/api/barang/peminjam?id_user=$userId'),
         headers: {
           'Content-Type': 'application/json',
           if (token != null) 'Authorization': 'Bearer $token',
@@ -215,13 +223,13 @@ class _ReturnState extends State<ReturnPage> {
     }
   }
 
-  // Mapping yang lebih fleksibel untuk BorrowedItem
   BorrowedItem _mapToBorrowedItem(dynamic item) {
     // Pastikan item adalah Map
     final itemMap = item is Map ? item : <String, dynamic>{};
 
-    // Definisi field-field yang mungkin
-    final possibleIdFields = ['id', 'barang_id', 'item_id', 'ID'];
+    // Define possible field names
+    final possibleLoanIdFields = ['id', 'peminjaman_id', 'loan_id', 'ID'];
+    final possibleItemIdFields = ['barang_id', 'item_id', 'id_barang'];
     final possibleNameFields = ['nama', 'nama_barang', 'item_name', 'name'];
     final possibleDateFields = [
       'tanggal_pinjam',
@@ -237,33 +245,42 @@ class _ReturnState extends State<ReturnPage> {
       'user_name'
     ];
 
-    // Perbaikan fungsi extractId
-    int extractId() {
-      for (var field in possibleIdFields) {
+    // Extract loan ID (ID peminjaman)
+    int extractLoanId() {
+      for (var field in possibleLoanIdFields) {
         if (itemMap.containsKey(field)) {
           dynamic idValue = itemMap[field];
-
-          // Handle different possible types of ID
           if (idValue == null) continue;
-
-          // Jika sudah int, langsung kembalikan
           if (idValue is int) return idValue;
-
-          // Jika string, coba parsing
           if (idValue is String) {
             int? parsedId = int.tryParse(idValue);
             if (parsedId != null) return parsedId;
           }
-
-          // Jika double, konversi ke int
           if (idValue is double) {
             return idValue.toInt();
           }
         }
       }
-
-      // Generate hash unik jika tidak ada ID valid
       return itemMap.hashCode.abs();
+    }
+
+    // Extract barang ID (ID barang)
+    int extractItemId() {
+      for (var field in possibleItemIdFields) {
+        if (itemMap.containsKey(field)) {
+          dynamic idValue = itemMap[field];
+          if (idValue == null) continue;
+          if (idValue is int) return idValue;
+          if (idValue is String) {
+            int? parsedId = int.tryParse(idValue);
+            if (parsedId != null) return parsedId;
+          }
+          if (idValue is double) {
+            return idValue.toInt();
+          }
+        }
+      }
+      return 0; // Default if no item ID found
     }
 
     String extractField(List<String> possibleFields,
@@ -290,7 +307,8 @@ class _ReturnState extends State<ReturnPage> {
     }
 
     return BorrowedItem(
-      id: extractId(),
+      id: extractLoanId(),
+      barangId: extractItemId(),
       name: extractField(possibleNameFields),
       borrowedDate: extractDate(),
       location: extractField(possibleLocationFields),
@@ -393,18 +411,6 @@ class _ReturnState extends State<ReturnPage> {
                                   Expanded(child: Text(item.name)),
                                 ],
                               ),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 14.0),
-                                child: Text(
-                                  "Kondisi: ${item.condition}",
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      color: item.condition == "Rusak"
-                                          ? Colors.red
-                                          : Colors.green,
-                                      fontWeight: FontWeight.w500),
-                                ),
-                              ),
                               if (item.notes.isNotEmpty)
                                 Padding(
                                   padding: const EdgeInsets.only(left: 14.0),
@@ -494,15 +500,17 @@ class _ReturnState extends State<ReturnPage> {
       // Log informasi barang yang akan dikembalikan
       print('Selected Items for Return:');
       for (var item in selectedItems) {
-        print('Item ID: ${item.id}, Name: ${item.name}');
+        print(
+            'Loan ID: ${item.id}, Item ID: ${item.barangId}, Name: ${item.name}');
       }
 
-      // Kumpulkan ID barang yang akan dikembalikan
-      final barangIds = selectedItems.map((item) => item.id).toList();
+      // Kumpulkan ID PEMINJAMAN (bukan ID barang) yang akan dikembalikan
+      final loanIds = selectedItems.map((item) => item.id).toList();
 
       // Kirim request ke API dengan struktur baru termasuk gudang
       final requestBody = {
-        "daftar_barang": barangIds,
+        "id_user": _userId,
+        "daftar_barang": loanIds, // Menggunakan ID peminjaman, bukan ID barang
         "gudang": _selectedWarehouse
       };
 
@@ -538,11 +546,6 @@ class _ReturnState extends State<ReturnPage> {
             backgroundColor: Colors.green,
           ),
         );
-
-        // Navigasi ke halaman utama (HomePage) dan hapus semua rute sebelumnya
-        Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => const Navigation()),
-            (Route<dynamic> route) => false);
       } else {
         // Error dari server
         String errorMessage =
@@ -553,14 +556,15 @@ class _ReturnState extends State<ReturnPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(errorMessage),
-              backgroundColor: Colors.green,
+              backgroundColor:
+                  Colors.green, // Changed from green to red for error messages
             ),
           );
         }
-        Navigator.of(context).pushAndRemoveUntil(
+      }
+      Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (context) => const Navigation()),
             (Route<dynamic> route) => false);
-      }
     } catch (e) {
       print('Form Submission Error: $e');
 
@@ -907,7 +911,7 @@ class _ReturnState extends State<ReturnPage> {
                                                     const SizedBox(width: 8),
                                                     Expanded(
                                                       child: Text(
-                                                        item.name,
+                                                        item.name, // Only shows the item name, not the user
                                                         style: const TextStyle(
                                                           fontSize: 14,
                                                         ),

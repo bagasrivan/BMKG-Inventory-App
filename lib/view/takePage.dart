@@ -20,8 +20,9 @@ class _TakeState extends State<TakePage> {
   String _loggedInUserName = "Memuat..."; // Default value while loading
   int _userId = 0; // Menyimpan ID user yang login
   DateTime selectedDate = DateTime.now();
-  List<Map<String, dynamic>> selectedItems = []; // Ubah ke Map untuk menyimpan nama, ID, dan jumlah
-  bool _isFormValid = false;
+  List<Map<String, dynamic>> selectedItems =
+      []; // Ubah ke Map untuk menyimpan nama, ID, dan jumlah
+  bool _isFormValid = true;
   bool _isLoading = true;
   bool _isSubmitting = false; // Flag untuk proses submit
 
@@ -63,7 +64,8 @@ class _TakeState extends State<TakePage> {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _loggedInUserName = prefs.getString('username') ?? 'Pengguna';
-      _userId = prefs.getInt('user_id') ?? 0; // Mengambil user_id dari SharedPreferences
+      _userId = prefs.getInt('user_id') ??
+          0; // Mengambil user_id dari SharedPreferences
       _validateForm(); // Validate form after loading username
     });
   }
@@ -71,8 +73,7 @@ class _TakeState extends State<TakePage> {
   // Validasi form
   void _validateForm() {
     setState(() {
-      _isFormValid = selectedLocation != null &&
-          _loggedInUserName.isNotEmpty &&
+      _isFormValid = _loggedInUserName.isNotEmpty &&
           _loggedInUserName != "Memuat..." &&
           selectedItems.isNotEmpty;
     });
@@ -138,10 +139,6 @@ class _TakeState extends State<TakePage> {
                 const Text("Apakah data pengambilan sudah benar?"),
                 const SizedBox(height: 16),
                 _buildConfirmationInfoRow(
-                  label: "Lokasi",
-                  value: selectedLocation!,
-                ),
-                _buildConfirmationInfoRow(
                   label: "Pengambil",
                   value: _loggedInUserName,
                 ),
@@ -167,7 +164,8 @@ class _TakeState extends State<TakePage> {
                                   size: 6, color: Colors.grey),
                               const SizedBox(width: 8),
                               Expanded(
-                                child: Text("${item['nama']} (${item['jumlah']} item)"),
+                                child: Text(
+                                    "${item['nama']} (${item['jumlah']} item)"),
                               ),
                             ],
                           ),
@@ -197,7 +195,10 @@ class _TakeState extends State<TakePage> {
                   Navigator.of(context).pop();
                   _submitForm();
                 },
-                child: const Text('Konfirmasi', style: TextStyle(color: Colors.white),),
+                child: const Text(
+                  'Konfirmasi',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ],
           );
@@ -265,8 +266,10 @@ class _TakeState extends State<TakePage> {
 
     try {
       // Ekstrak ID barang dan jumlah yang dipilih
-      List<int> itemIds = selectedItems.map<int>((item) => item['id'] as int).toList();
-      List<int> itemJumlah = selectedItems.map<int>((item) => item['jumlah'] as int).toList();
+      List<int> itemIds =
+          selectedItems.map<int>((item) => item['id'] as int).toList();
+      List<int> itemJumlah =
+          selectedItems.map<int>((item) => item['jumlah'] as int).toList();
 
       // Persiapkan data untuk dikirim ke API sesuai format yang diminta
       final requestBody = {
@@ -292,7 +295,9 @@ class _TakeState extends State<TakePage> {
       print("API Response body: ${response.body}");
 
       // Cek status response
-      if (response.statusCode == 200 || response.statusCode == 201 || response.statusCode == 207) {
+      if (response.statusCode == 200 ||
+          response.statusCode == 201 ||
+          response.statusCode == 207) {
         // Sukses
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -497,44 +502,6 @@ class _TakeState extends State<TakePage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Lokasi field
-                                _buildFormLabel("Lokasi Pengambilan"),
-                                const SizedBox(height: 8),
-                                Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12),
-                                    color: Colors.white,
-                                    border: Border.all(
-                                      color: Colors.grey.shade300,
-                                      width: 1,
-                                    ),
-                                  ),
-                                  child: DropdownButtonFormField<String>(
-                                    value: selectedLocation,
-                                    hint: const Text("Pilih Lokasi"),
-                                    icon: const Icon(Icons.arrow_drop_down,
-                                        color: bmkgBlue),
-                                    decoration: const InputDecoration(
-                                      contentPadding: EdgeInsets.symmetric(
-                                          horizontal: 16, vertical: 14),
-                                      border: InputBorder.none,
-                                    ),
-                                    isExpanded: true,
-                                    items: locations
-                                        .map((loc) => DropdownMenuItem(
-                                            value: loc, child: Text(loc)))
-                                        .toList(),
-                                    onChanged: (value) {
-                                      setState(() {
-                                        selectedLocation = value;
-                                        _validateForm();
-                                      });
-                                    },
-                                  ),
-                                ),
-
-                                const SizedBox(height: 20),
-
                                 // Pengambil field (static with username already filled)
                                 _buildFormLabel("Nama Pengambil"),
                                 const SizedBox(height: 8),
@@ -782,10 +749,9 @@ class _TakeState extends State<TakePage> {
                                     : const Text(
                                         'Simpan Pengambilan',
                                         style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white
-                                        ),
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white),
                                       ),
                               ),
                             ),

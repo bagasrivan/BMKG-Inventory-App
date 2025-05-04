@@ -72,7 +72,13 @@ class _ChooseItemState extends State<ChooseItemPage> {
   static const Color bmkgBlue = Color(0xFF0D47A1);
   static const Color bmkgLightBlue = Color(0xFF1976D2);
 
-  List<String> categories = ["Tersedia", "Terpinjam"];
+  List<String> categories = [
+    "Tersedia",
+    "Terpinjam",
+    "Radar",
+    "Tata Usaha",
+    "Operasional"
+  ];
   String selectedCategory = "Tersedia";
   List<Map<String, dynamic>> selectedItems = [];
 
@@ -427,24 +433,39 @@ class _ChooseItemState extends State<ChooseItemPage> {
     }
   }
 
+  // Fixed _filterItems method
   void _filterItems() {
     String query = _searchController.text.toLowerCase();
 
     setState(() {
-      // Filter items based on search and category
+      // Filter items based on search, category, and location
       filteredItems = items.where((item) {
-        // Sesuaikan filter berdasarkan kategori yang dipilih
-        bool matchesCategory = selectedCategory == "Tersedia"
-            ? item.status.toLowerCase() == "tersedia"
-            : item.status.toLowerCase() == "terpinjam";
+        // Check if the category refers to availability status or location
+        bool matchesStatusCategory = false;
+        bool matchesLocationCategory = false;
 
-        // Cocokkan dengan nama barang
+        // Handle availability status categories
+        if (selectedCategory == "Tersedia" || selectedCategory == "Terpinjam") {
+          matchesStatusCategory =
+              item.status.toLowerCase() == selectedCategory.toLowerCase();
+          matchesLocationCategory =
+              true; // Not filtering by location for these categories
+        }
+        // Handle location-based categories (Radar, Tata Usaha, Operasional)
+        else {
+          matchesStatusCategory =
+              true; // Not filtering by status for location categories
+          matchesLocationCategory =
+              item.gudang.toLowerCase() == selectedCategory.toLowerCase();
+        }
+
+        // Match with item name search query
         bool matchesQuery = item.nama.toLowerCase().contains(query);
 
-        return matchesCategory && matchesQuery;
+        return matchesStatusCategory && matchesLocationCategory && matchesQuery;
       }).toList();
 
-      // Urutkan berdasar nama
+      // Sort by name
       filteredItems.sort((a, b) => a.nama.compareTo(b.nama));
     });
   }

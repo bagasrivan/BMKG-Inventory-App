@@ -24,7 +24,7 @@ class _AddState extends State<AddPage> {
   DateTime selectedDate = DateTime.now();
   List<Map<String, dynamic>> selectedItems =
       []; // Ubah ke Map untuk menyimpan nama dan ID
-  bool _isFormValid = false;
+  bool _isFormValid = true;
   bool _isLoading = true;
   bool _isSubmitting = false; // Flag untuk proses submit
   bool _formSubmitted = false; // Flag untuk menandai form berhasil submit
@@ -92,8 +92,7 @@ class _AddState extends State<AddPage> {
   // Validasi form
   void _validateForm() {
     setState(() {
-      _isFormValid = selectedLocation != null &&
-          _loggedInUserName.isNotEmpty &&
+      _isFormValid = _loggedInUserName.isNotEmpty &&
           _loggedInUserName != "Memuat..." &&
           selectedItems.isNotEmpty;
     });
@@ -189,10 +188,6 @@ class _AddState extends State<AddPage> {
             children: [
               const Text("Apakah data peminjaman sudah benar?"),
               const SizedBox(height: 16),
-              _buildConfirmationInfoRow(
-                label: "Lokasi",
-                value: selectedLocation!,
-              ),
               _buildConfirmationInfoRow(
                 label: "Peminjam",
                 value: _loggedInUserName,
@@ -592,44 +587,6 @@ class _AddState extends State<AddPage> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // Lokasi field
-                                  _buildFormLabel("Lokasi Peminjaman"),
-                                  const SizedBox(height: 8),
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(12),
-                                      color: Colors.white,
-                                      border: Border.all(
-                                        color: Colors.grey.shade300,
-                                        width: 1,
-                                      ),
-                                    ),
-                                    child: DropdownButtonFormField<String>(
-                                      value: selectedLocation,
-                                      hint: const Text("Pilih Lokasi"),
-                                      icon: const Icon(Icons.arrow_drop_down,
-                                          color: bmkgBlue),
-                                      decoration: const InputDecoration(
-                                        contentPadding: EdgeInsets.symmetric(
-                                            horizontal: 16, vertical: 14),
-                                        border: InputBorder.none,
-                                      ),
-                                      isExpanded: true,
-                                      items: locations
-                                          .map((loc) => DropdownMenuItem(
-                                              value: loc, child: Text(loc)))
-                                          .toList(),
-                                      onChanged: (value) {
-                                        setState(() {
-                                          selectedLocation = value;
-                                          _validateForm();
-                                        });
-                                      },
-                                    ),
-                                  ),
-
-                                  const SizedBox(height: 20),
-
                                   // Peminjam field (static with username already filled)
                                   _buildFormLabel("Nama Peminjam"),
                                   const SizedBox(height: 8),

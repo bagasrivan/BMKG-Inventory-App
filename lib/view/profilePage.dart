@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:bmkg_inventory_system/view/editProfilePage.dart';
 
 // Assuming this is defined elsewhere in your app
 const Color bmkgBlue = Color(0xFF0D47A1); // Replace with your actual color
@@ -140,7 +141,7 @@ class _ProfileState extends State<ProfilePage> {
               child: Column(
                 children: [
                   const SizedBox(height: 30),
-                  
+
                   // Avatar with initials instead of photo
                   Container(
                     height: isSmallScreen ? 100 : 120,
@@ -175,9 +176,9 @@ class _ProfileState extends State<ProfilePage> {
                       ),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 20),
-                  
+
                   // User name
                   Text(
                     'Hai, ${_userData['name']}!',
@@ -187,7 +188,7 @@ class _ProfileState extends State<ProfilePage> {
                       color: Colors.white,
                     ),
                   ),
-                  
+
                   // Role badge with improved design
                   Container(
                     margin: const EdgeInsets.only(top: 8, bottom: 25),
@@ -223,7 +224,7 @@ class _ProfileState extends State<ProfilePage> {
                       ],
                     ),
                   ),
-                  
+
                   // Wave decoration
                   ClipPath(
                     clipper: WaveClipper(),
@@ -236,16 +237,17 @@ class _ProfileState extends State<ProfilePage> {
                 ],
               ),
             ),
-            
+
             // Options cards section
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [                  
+                children: [
                   // Account options section
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
                     child: Row(
                       children: [
                         Container(
@@ -268,7 +270,7 @@ class _ProfileState extends State<ProfilePage> {
                       ],
                     ),
                   ),
-                  
+
                   // Account options cards
                   Card(
                     elevation: 2,
@@ -283,39 +285,27 @@ class _ProfileState extends State<ProfilePage> {
                           iconColor: bmkgBlue,
                           title: 'Edit Profil',
                           subtitle: 'Perbarui informasi data diri Anda',
-                          onTap: () {
-                            // Navigate to edit profile
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Fitur Edit Profil akan segera tersedia'),
-                                behavior: SnackBarBehavior.floating,
-                              ),
+                          onTap: () async {
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      const EditProfilePage()),
                             );
-                          },
-                        ),
-                        const Divider(height: 1),
-                        _buildActionItem(
-                          icon: Icons.lock_outline,
-                          iconColor: bmkgBlue,
-                          title: 'Ubah Kata Sandi',
-                          subtitle: 'Perbarui kata sandi untuk keamanan',
-                          onTap: () {
-                            // Navigate to change password
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Fitur Ubah Kata Sandi akan segera tersedia'),
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
+                            if (result == true) {
+                              // Refresh profile data after successful edit
+                              _loadUserData();
+                            }
                           },
                         ),
                       ],
                     ),
                   ),
-                  
+
                   // Additional options section
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
                     child: Row(
                       children: [
                         Container(
@@ -338,7 +328,7 @@ class _ProfileState extends State<ProfilePage> {
                       ],
                     ),
                   ),
-                  
+
                   // Additional options
                   Card(
                     elevation: 2,
@@ -357,7 +347,8 @@ class _ProfileState extends State<ProfilePage> {
                             // Navigate to help page
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('Fitur Bantuan akan segera tersedia'),
+                                content:
+                                    Text('Fitur Bantuan akan segera tersedia'),
                                 behavior: SnackBarBehavior.floating,
                               ),
                             );
@@ -386,11 +377,12 @@ class _ProfileState extends State<ProfilePage> {
                       ],
                     ),
                   ),
-                  
+
                   // Footer with design element
                   Container(
                     margin: const EdgeInsets.symmetric(vertical: 20),
-                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 12, horizontal: 20),
                     decoration: BoxDecoration(
                       color: Colors.grey.shade200,
                       borderRadius: BorderRadius.circular(30),
@@ -428,7 +420,7 @@ class _ProfileState extends State<ProfilePage> {
   // Method to get user initials
   String _getInitials(String name) {
     if (name.isEmpty) return '?';
-    
+
     List<String> nameParts = name.trim().split(' ');
     if (nameParts.length > 1) {
       return '${nameParts[0][0]}${nameParts[1][0]}'.toUpperCase();
@@ -545,7 +537,7 @@ class _ProfileState extends State<ProfilePage> {
       ),
     );
   }
-  
+
   // Dialog about app
   void _showAboutAppDialog() {
     showDialog(
@@ -594,7 +586,8 @@ class _ProfileState extends State<ProfilePage> {
               ),
               const SizedBox(height: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
                   color: bmkgBlue.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(20),
@@ -663,26 +656,18 @@ class WaveClipper extends CustomClipper<Path> {
   Path getClip(Size size) {
     final path = Path();
     path.lineTo(0, 0); // Starting point
-    
+
     // Draw wave
     path.lineTo(0, size.height * 0.8);
-    
+
     // First curve
     path.quadraticBezierTo(
-      size.width * 0.25, 
-      size.height, 
-      size.width * 0.5, 
-      size.height * 0.8
-    );
-    
+        size.width * 0.25, size.height, size.width * 0.5, size.height * 0.8);
+
     // Second curve
     path.quadraticBezierTo(
-      size.width * 0.75, 
-      size.height * 0.6, 
-      size.width, 
-      size.height * 0.8
-    );
-    
+        size.width * 0.75, size.height * 0.6, size.width, size.height * 0.8);
+
     path.lineTo(size.width, 0);
     path.close();
     return path;

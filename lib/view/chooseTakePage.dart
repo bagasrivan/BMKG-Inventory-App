@@ -53,7 +53,9 @@ class InventoryItem {
       status: json['status'] ?? 'Tidak Tersedia',
       gudang: json['gudang'] ?? 'Tidak Diketahui',
       kategori: json['kategori'] ?? 'Umum',
-      stok: json['stok'] is int ? json['stok'] : 0, // Default stok 0 jika tidak ada
+      stok: json['stok'] is int
+          ? json['stok']
+          : 0, // Default stok 0 jika tidak ada
       qr: json['qr']?.toString(),
     );
   }
@@ -71,9 +73,16 @@ class _ChooseTakeState extends State<ChooseTakePage> {
   static const Color bmkgBlue = Color(0xFF0D47A1);
   static const Color bmkgLightBlue = Color(0xFF1976D2);
 
-  List<String> categories = ["Tersedia", "Semua Barang"];
+  List<String> categories = [
+    "Tersedia",
+    "Semua Barang",
+    "Radar",
+    "Tata Usaha",
+    "Operasional"
+  ];
   String selectedCategory = "Tersedia";
-  List<Map<String, dynamic>> selectedItems = []; // Simpan id, nama, dan jumlah barang
+  List<Map<String, dynamic>> selectedItems =
+      []; // Simpan id, nama, dan jumlah barang
 
   List<InventoryItem> items = [];
   List<InventoryItem> filteredItems = [];
@@ -253,7 +262,8 @@ class _ChooseTakeState extends State<ChooseTakePage> {
                             : null,
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
                           border: Border.all(color: Colors.grey.shade300),
                           borderRadius: BorderRadius.circular(8),
@@ -324,20 +334,41 @@ class _ChooseTakeState extends State<ChooseTakePage> {
     String query = _searchController.text.toLowerCase();
 
     setState(() {
+      // Filter items based on search, category, and location
       filteredItems = items.where((item) {
-        bool matchesCategory = selectedCategory == "Semua Barang" ||
-            (item.status.toLowerCase() == "tersedia" && item.stok > 0);
-        bool matchesSearch = item.nama.toLowerCase().contains(query);
+        // Check if the category refers to availability status or location
+        bool matchesStatusCategory = false;
+        bool matchesLocationCategory = false;
 
-        return matchesCategory && matchesSearch;
+        // Handle availability status categories
+        if (selectedCategory == "Tersedia" ||
+            selectedCategory == "Semua Barang") {
+          matchesStatusCategory = selectedCategory == "Semua Barang" ||
+              (item.status.toLowerCase() == "tersedia" && item.stok > 0);
+          matchesLocationCategory =
+              true; // Not filtering by location for these categories
+        }
+        // Handle location-based categories (Radar, Tata Usaha, Operasional)
+        else {
+          matchesStatusCategory =
+              true; // Not filtering by status for location categories
+          matchesLocationCategory =
+              item.gudang.toLowerCase() == selectedCategory.toLowerCase();
+        }
+
+        // Match with item name search query
+        bool matchesQuery = item.nama.toLowerCase().contains(query);
+
+        return matchesStatusCategory && matchesLocationCategory && matchesQuery;
       }).toList();
 
-      // Urutkan barang yang tersedia ke atas
+      // Sort items with available stock first
       filteredItems.sort((a, b) {
         if (a.status.toLowerCase() == "tidak tersedia" ||
             a.stok == 0 && b.status.toLowerCase() == "tersedia" && b.stok > 0) {
           return 1;
-        } else if (a.status.toLowerCase() == "tersedia" && a.stok > 0 &&
+        } else if (a.status.toLowerCase() == "tersedia" &&
+            a.stok > 0 &&
             (b.status.toLowerCase() == "tidak tersedia" || b.stok == 0)) {
           return -1;
         }
@@ -553,8 +584,8 @@ class _ChooseTakeState extends State<ChooseTakePage> {
                                 itemBuilder: (context, index) {
                                   var item = filteredItems[index];
                                   // Cek apakah item sudah dipilih
-                                  bool isSelected = selectedItems
-                                      .any((element) => element['id'] == item.id);
+                                  bool isSelected = selectedItems.any(
+                                      (element) => element['id'] == item.id);
 
                                   return Card(
                                     margin: const EdgeInsets.only(bottom: 8),
@@ -569,7 +600,8 @@ class _ChooseTakeState extends State<ChooseTakePage> {
                                         padding: const EdgeInsets.all(8),
                                         decoration: BoxDecoration(
                                           color: bmkgLightBlue.withOpacity(0.1),
-                                          borderRadius: BorderRadius.circular(8),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
                                         ),
                                         child: Image.network(
                                           item.gambar,
@@ -606,8 +638,8 @@ class _ChooseTakeState extends State<ChooseTakePage> {
                                               const SizedBox(width: 4),
                                               Text(
                                                 item.kategori,
-                                                style:
-                                                    const TextStyle(fontSize: 12),
+                                                style: const TextStyle(
+                                                    fontSize: 12),
                                               ),
                                             ],
                                           ),
@@ -621,8 +653,8 @@ class _ChooseTakeState extends State<ChooseTakePage> {
                                               const SizedBox(width: 4),
                                               Text(
                                                 item.gudang,
-                                                style:
-                                                    const TextStyle(fontSize: 12),
+                                                style: const TextStyle(
+                                                    fontSize: 12),
                                               ),
                                             ],
                                           ),
@@ -652,10 +684,13 @@ class _ChooseTakeState extends State<ChooseTakePage> {
                                                   "tidak tersedia" ||
                                               item.stok <= 0
                                           ? Container(
-                                              padding: const EdgeInsets.symmetric(
-                                                  horizontal: 8, vertical: 4),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 4),
                                               decoration: BoxDecoration(
-                                                color: Colors.red.withOpacity(0.1),
+                                                color:
+                                                    Colors.red.withOpacity(0.1),
                                                 borderRadius:
                                                     BorderRadius.circular(8),
                                               ),
@@ -691,13 +726,16 @@ class _ChooseTakeState extends State<ChooseTakePage> {
                                                       setState(() {
                                                         if (isSelected) {
                                                           // Hapus item dari daftar
-                                                          selectedItems.removeWhere(
-                                                              (element) =>
-                                                                  element['id'] ==
-                                                                  item.id);
+                                                          selectedItems
+                                                              .removeWhere(
+                                                                  (element) =>
+                                                                      element[
+                                                                          'id'] ==
+                                                                      item.id);
                                                         } else {
                                                           // Tampilkan dialog pemilihan jumlah
-                                                          _showQuantityDialog(item);
+                                                          _showQuantityDialog(
+                                                              item);
                                                         }
                                                       });
                                                     },
