@@ -62,12 +62,15 @@ class _ProfileState extends State<ProfilePage> {
                 Navigator.of(context).pushReplacementNamed('/login');
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
+                backgroundColor: bmkgBlue,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              child: const Text('Logout'),
+              child: const Text(
+                'Logout',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         );
@@ -101,17 +104,6 @@ class _ProfileState extends State<ProfilePage> {
             bottom: Radius.circular(20),
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.logout_rounded,
-              color: Colors.white,
-            ),
-            onPressed: () {
-              _showLogoutDialog(context);
-            },
-          )
-        ],
       ),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
@@ -641,7 +633,10 @@ class _ProfileState extends State<ProfilePage> {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              child: const Text('Tutup'),
+              child: const Text(
+                'Tutup',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         );

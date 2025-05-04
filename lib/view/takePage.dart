@@ -582,7 +582,6 @@ class _TakeState extends State<TakePage> {
                                           });
                                         }
                                       },
-                                      icon: const Icon(Icons.add, size: 18),
                                       label: const Text("Pilih Barang"),
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: bmkgBlue,

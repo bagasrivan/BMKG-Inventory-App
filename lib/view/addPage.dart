@@ -654,7 +654,6 @@ class _AddState extends State<AddPage> {
                                       _buildFormLabel("Barang yang Dipinjam"),
                                       ElevatedButton.icon(
                                         onPressed: _navigateToChooseItems,
-                                        icon: const Icon(Icons.add, size: 18),
                                         label: const Text("Pilih Barang"),
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: bmkgBlue,

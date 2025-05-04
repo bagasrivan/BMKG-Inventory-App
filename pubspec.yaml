@@ -68,14 +68,7 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   assets:
-  - assets/logo-bmkg.png
-  - assets/logo-splash.png
   - assets/hands-holding.png
-  - assets/profile.png
-  - assets/handytalky.png
-  - assets/car.png
-  - assets/printer.png
-  - assets/tanggalipat.png
   - assets/icon.png
   # To add assets to your application, add an assets section, like this:
   # assets:

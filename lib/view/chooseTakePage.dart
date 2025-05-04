@@ -320,7 +320,10 @@ class _ChooseTakeState extends State<ChooseTakePage> {
                     });
                     Navigator.of(context).pop();
                   },
-                  child: const Text('Konfirmasi'),
+                  child: const Text(
+                    'Konfirmasi',
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
               ],
             );
