@@ -91,9 +91,8 @@ class _InventoryState extends State<InventoryPage> {
       if (response.statusCode == 200) {
         final List<dynamic> responseData = json.decode(response.body);
         setState(() {
-          items = responseData
-              .map((item) => InventoryItem.fromJson(item))
-              .toList();
+          items =
+              responseData.map((item) => InventoryItem.fromJson(item)).toList();
           _filterItems();
           _isLoading = false;
         });
@@ -122,9 +121,8 @@ class _InventoryState extends State<InventoryPage> {
           matchesCategory = item.status == selectedCategory.toLowerCase();
         } else {
           // Cek kategori atau gudang
-          matchesCategory = 
-            item.kategori == selectedCategory || 
-            item.gudang == selectedCategory;
+          matchesCategory = item.kategori == selectedCategory ||
+              item.gudang == selectedCategory;
         }
 
         bool matchesSearch = item.nama.toLowerCase().contains(query);
@@ -243,24 +241,13 @@ class _InventoryState extends State<InventoryPage> {
                         ),
                         const SizedBox(height: 12),
                         _buildInfoRow(
-                          Icons.category, 
-                          'Kategori', 
-                          item.kategori
-                        ),
+                            Icons.category, 'Kategori', item.kategori),
                         const SizedBox(height: 8),
-                        _buildInfoRow(
-                          Icons.location_on, 
-                          'Gudang', 
-                          item.gudang
-                        ),
-                        if (item.stok != null)
-                          const SizedBox(height: 8),
+                        _buildInfoRow(Icons.location_on, 'Gudang', item.gudang),
+                        if (item.stok != null) const SizedBox(height: 8),
                         if (item.stok != null)
                           _buildInfoRow(
-                            Icons.inventory, 
-                            'Stok', 
-                            item.stok.toString()
-                          ),
+                              Icons.inventory, 'Stok', item.stok.toString()),
                       ],
                     ),
                   ),
@@ -274,6 +261,45 @@ class _InventoryState extends State<InventoryPage> {
           ),
         );
       },
+    );
+  }
+
+  Widget _getCategoryIcon(String category) {
+    IconData iconData;
+
+    switch (category.toLowerCase()) {
+      case 'semua':
+        iconData = Icons.all_inclusive;
+        break;
+      case 'tersedia':
+        iconData = Icons.check_circle_outline;
+        break;
+      case 'terpinjam':
+        iconData = Icons.access_time;
+        break;
+      case 'perkakas':
+        iconData = Icons.build;
+        break;
+      case 'alat tulis':
+        iconData = Icons.edit;
+        break;
+      case 'operasional':
+        iconData = Icons.business_center;
+        break;
+      case 'tata usaha':
+        iconData = Icons.assignment;
+        break;
+      case 'radar':
+        iconData = Icons.radar;
+        break;
+      default:
+        iconData = Icons.category;
+    }
+
+    return Icon(
+      iconData,
+      size: 18,
+      color: selectedCategory == category ? Colors.white : bmkgBlue,
     );
   }
 
@@ -329,140 +355,223 @@ class _InventoryState extends State<InventoryPage> {
         ),
       ),
       body: _isLoading
-        ? Center(
-            child: CircularProgressIndicator(
-              color: bmkgBlue,
-            ),
-          )
-        : _errorMessage.isNotEmpty
           ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    _errorMessage,
-                    style: TextStyle(color: Colors.red),
-                  ),
-                  ElevatedButton(
-                    onPressed: _fetchInventoryItems,
-                    child: Text('Coba Lagi'),
-                  )
-                ],
+              child: CircularProgressIndicator(
+                color: bmkgBlue,
               ),
             )
-          : SafeArea(
-              child: Column(
-                children: [
-                  // Search dan Filter
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.1),
-                          spreadRadius: 1,
-                          blurRadius: 10,
-                          offset: const Offset(0, 1),
-                        ),
-                      ],
-                    ),
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        TextField(
-                          controller: _searchController,
-                          decoration: InputDecoration(
-                            hintText: 'Cari barang...',
-                            prefixIcon: const Icon(Icons.search, color: bmkgBlue),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          height: 40,
-                          child: ListView(
-                            scrollDirection: Axis.horizontal,
-                            children: categories.map((category) {
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 4),
-                                child: ChoiceChip(
-                                  label: Text(category),
-                                  selected: selectedCategory == category,
-                                  onSelected: (bool selected) {
-                                    setState(() {
-                                      selectedCategory = selected ? category : "Semua";
-                                      _filterItems();
-                                    });
-                                  },
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        ),
-                      ],
-                    ),
+          : _errorMessage.isNotEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        _errorMessage,
+                        style: TextStyle(color: Colors.red),
+                      ),
+                      ElevatedButton(
+                        onPressed: _fetchInventoryItems,
+                        child: Text('Coba Lagi'),
+                      )
+                    ],
                   ),
-
-                  // Daftar Barang
-                  Expanded(
-                    child: filteredItems.isEmpty
-                      ? Center(
-                          child: Text(
-                            'Tidak ada barang ditemukan',
-                            style: TextStyle(color: Colors.grey[600]),
-                          ),
-                        )
-                      : ListView.builder(
-                          itemCount: filteredItems.length,
-                          itemBuilder: (context, index) {
-                            var item = filteredItems[index];
-                            return Card(
-                              margin: const EdgeInsets.symmetric(
-                                horizontal: 16, 
-                                vertical: 8
-                              ),
-                              child: ListTile(
-                                leading: CircleAvatar(
-                                  backgroundImage: NetworkImage(item.gambar),
-                                  backgroundColor: Colors.transparent,
+                )
+              : SafeArea(
+                  child: Column(
+                    children: [
+                      // Search dan Filter
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.1),
+                              spreadRadius: 1,
+                              blurRadius: 10,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          children: [
+                            TextField(
+                              controller: _searchController,
+                              decoration: InputDecoration(
+                                hintText: 'Cari barang...',
+                                hintStyle: TextStyle(
+                                  color: Colors.grey[400],
+                                  fontSize: 14,
                                 ),
-                                title: Text(item.nama),
-                                subtitle: Text(
-                                  '${item.kategori} - ${item.gudang}',
+                                prefixIcon:
+                                    const Icon(Icons.search, color: bmkgBlue),
+                                suffixIcon: _searchController.text.isNotEmpty
+                                    ? IconButton(
+                                        icon: const Icon(Icons.clear,
+                                            color: bmkgBlue, size: 20),
+                                        onPressed: () {
+                                          _searchController.clear();
+                                          _filterItems();
+                                        },
+                                      )
+                                    : null,
+                                filled: true,
+                                fillColor: Colors.grey[50],
+                                contentPadding:
+                                    const EdgeInsets.symmetric(vertical: 12),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                  borderSide:
+                                      BorderSide(color: Colors.grey[300]!),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                  borderSide: const BorderSide(
+                                      color: bmkgBlue, width: 1.5),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                  borderSide:
+                                      BorderSide(color: Colors.grey[300]!),
+                                ),
+                              ),
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              height: 50,
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: categories.length,
+                                itemBuilder: (context, index) {
+                                  final category = categories[index];
+                                  final isSelected =
+                                      selectedCategory == category;
+
+                                  return Padding(
+                                    padding: const EdgeInsets.only(right: 10.0),
+                                    child: InkWell(
+                                      onTap: () {
+                                        setState(() {
+                                          selectedCategory =
+                                              isSelected ? "Semua" : category;
+                                          _filterItems();
+                                        });
+                                      },
+                                      borderRadius: BorderRadius.circular(25),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 16, vertical: 8),
+                                        decoration: BoxDecoration(
+                                          color: isSelected
+                                              ? bmkgBlue
+                                              : Colors.grey[100],
+                                          borderRadius:
+                                              BorderRadius.circular(25),
+                                          border: Border.all(
+                                            color: isSelected
+                                                ? bmkgBlue
+                                                : Colors.grey[300]!,
+                                            width: 1,
+                                          ),
+                                          boxShadow: isSelected
+                                              ? [
+                                                  BoxShadow(
+                                                    color: bmkgBlue
+                                                        .withOpacity(0.3),
+                                                    blurRadius: 8,
+                                                    offset: const Offset(0, 3),
+                                                  )
+                                                ]
+                                              : null,
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            // Tambahkan icon sesuai kategori
+                                            _getCategoryIcon(category),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              category,
+                                              style: TextStyle(
+                                                color: isSelected
+                                                    ? Colors.white
+                                                    : Colors.black87,
+                                                fontWeight: isSelected
+                                                    ? FontWeight.bold
+                                                    : FontWeight.normal,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Daftar Barang
+                      Expanded(
+                        child: filteredItems.isEmpty
+                            ? Center(
+                                child: Text(
+                                  'Tidak ada barang ditemukan',
                                   style: TextStyle(color: Colors.grey[600]),
                                 ),
-                                trailing: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, 
-                                    vertical: 5
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: item.status == 'tersedia' 
-                                      ? Colors.green.withOpacity(0.1)
-                                      : Colors.red.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Text(
-                                    item.status.toUpperCase(),
-                                    style: TextStyle(
-                                      color: item.status == 'tersedia' 
-                                        ? Colors.green 
-                                        : Colors.red,
-                                      fontSize: 12,
+                              )
+                            : ListView.builder(
+                                itemCount: filteredItems.length,
+                                itemBuilder: (context, index) {
+                                  var item = filteredItems[index];
+                                  return Card(
+                                    margin: const EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 8),
+                                    child: ListTile(
+                                      leading: CircleAvatar(
+                                        backgroundImage:
+                                            NetworkImage(item.gambar),
+                                        backgroundColor: Colors.transparent,
+                                      ),
+                                      title: Text(item.nama),
+                                      subtitle: Text(
+                                        '${item.kategori} - ${item.gudang}',
+                                        style:
+                                            TextStyle(color: Colors.grey[600]),
+                                      ),
+                                      trailing: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 10, vertical: 5),
+                                        decoration: BoxDecoration(
+                                          color: item.status == 'tersedia'
+                                              ? Colors.green.withOpacity(0.1)
+                                              : Colors.red.withOpacity(0.1),
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                        ),
+                                        child: Text(
+                                          item.status.toUpperCase(),
+                                          style: TextStyle(
+                                            color: item.status == 'tersedia'
+                                                ? Colors.green
+                                                : Colors.red,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
+                                      onTap: () => _showItemDetails(item),
                                     ),
-                                  ),
-                                ),
-                                onTap: () => _showItemDetails(item),
+                                  );
+                                },
                               ),
-                            );
-                          },
-                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
+                ),
     );
   }
 

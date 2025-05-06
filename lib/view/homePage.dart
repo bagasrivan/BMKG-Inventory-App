@@ -171,220 +171,223 @@ class _HomeState extends State<HomePage> {
           physics: const BouncingScrollPhysics(),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header dengan salam
-                Padding(
-                  padding: const EdgeInsets.only(left: 4, bottom: 16, top: 8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        getGreeting(),
-                        style: TextStyle(
-                          fontSize: isSmallScreen ? 20 : 24,
-                          fontWeight: FontWeight.bold,
-                          color: bmkgBlue,
-                        ),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              // Header dengan salam
+              Padding(
+                padding: const EdgeInsets.only(left: 4, bottom: 16, top: 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      getGreeting(),
+                      style: TextStyle(
+                        fontSize: isSmallScreen ? 20 : 24,
+                        fontWeight: FontWeight.bold,
+                        color: bmkgBlue,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Selamat datang di Sistem Inventaris BMKG',
-                        style: TextStyle(
-                          fontSize: isSmallScreen ? 14 : 16,
-                          color: Colors.grey[700],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Dashboard Summary dengan shadow dan gradien
-                Container(
-                  padding: EdgeInsets.all(isSmallScreen ? 20 : 24),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [bmkgBlue, bmkgLightBlue],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
                     ),
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: bmkgBlue.withOpacity(0.3),
-                        spreadRadius: 1,
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Selamat datang di Sistem Inventaris Stamet Syamsudin Noor',
+                      style: TextStyle(
+                        fontSize: isSmallScreen ? 14 : 16,
+                        color: Colors.grey[700],
                       ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Tanggal dengan desain yang lebih modern
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.calendar_today,
-                                size: 16, color: Colors.white),
-                            const SizedBox(width: 8),
-                            Text(
-                              getFormattedDate(),
-                              style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
+                    ),
+                  ],
+                ),
+              ),
 
-                      // Statistik dengan desain card
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              // Dashboard Summary dengan shadow dan gradien
+              Container(
+                padding: EdgeInsets.all(isSmallScreen ? 20 : 24),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [bmkgBlue, bmkgLightBlue],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: bmkgBlue.withOpacity(0.3),
+                      spreadRadius: 1,
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Tanggal dengan desain yang lebih modern
+                    Container(
+                      margin: const EdgeInsets.symmetric(vertical: 10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildStatCard(
-                            '$totalBarang',
-                            'Total\nBarang',
-                            Icons.inventory,
-                            Colors.white,
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8, bottom: 12),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.calendar_today,
+                                    size: 16, color: Colors.white),
+                                const SizedBox(width: 8),
+                                Text(
+                                  getFormattedDate(),
+                                  style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w500),
+                                ),
+                              ],
+                            ),
                           ),
-                          _buildStatCard(
-                            '$barangTersedia',
-                            'Barang\nTersedia',
-                            Icons.check_circle,
-                            Colors.white,
-                          ),
-                          _buildStatCard(
-                            '$barangDipinjam',
-                            'Barang\nDipinjam',
-                            Icons.pending_actions,
-                            Colors.white,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              _buildStatCard(
+                                '$totalBarang',
+                                'Total Barang',
+                                Icons.inventory_2_rounded,
+                                Colors.white,
+                                const Color(0xFF1E88E5),
+                              ),
+                              _buildStatCard(
+                                '$barangTersedia',
+                                'Tersedia',
+                                Icons.check_circle_outline_rounded,
+                                Colors.white,
+                                const Color(0xFF43A047),
+                              ),
+                              _buildStatCard(
+                                '$barangDipinjam',
+                                'Dipinjam',
+                                Icons.pending_actions_rounded,
+                                Colors.white,
+                                const Color(0xFFFFA000),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
-                  ),
-                ),
+                    ),
 
-                const SizedBox(height: 24),
+                    const SizedBox(height: 24),
 
-                // Kelola Inventory (sama seperti sebelumnya)
-                Card(
-                  elevation: 6,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20)),
-                  shadowColor: Colors.grey.withOpacity(0.4),
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Header card
-                        Row(
+                    // Kelola Inventory (sama seperti sebelumnya)
+                    Card(
+                      elevation: 6,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20)),
+                      shadowColor: Colors.grey.withOpacity(0.4),
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: bmkgLightBlue.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Icon(
-                                Icons.settings,
-                                color: bmkgLightBlue,
-                                size: 24,
-                              ),
+                            // Header card
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: bmkgLightBlue.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Icon(
+                                    Icons.settings,
+                                    color: bmkgLightBlue,
+                                    size: 24,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                const Text(
+                                  'Kelola Inventaris',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: bmkgBlue,
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 12),
-                            const Text(
-                              'Kelola Inventaris',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: bmkgBlue,
-                              ),
+
+                            const SizedBox(height: 20),
+                            const Divider(),
+                            const SizedBox(height: 5),
+
+                            // Menu Peminjaman
+                            _buildMenuButton(
+                              icon: Icons.assignment_add,
+                              title: 'Peminjaman Barang',
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => const AddPage()));
+                              },
+                            ),
+
+                            const SizedBox(height: 5),
+                            const Divider(),
+                            const SizedBox(height: 5),
+
+                            _buildMenuButton(
+                              icon: Icons.edit_note,
+                              title: 'Pengambilan ATK',
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            const TakePage()));
+                              },
+                            ),
+
+                            const SizedBox(height: 5),
+                            const Divider(),
+                            const SizedBox(height: 5),
+
+                            // Menu Pengembalian
+                            _buildMenuButton(
+                              icon: Icons.assignment_return,
+                              title: 'Pengembalian Barang',
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            const ReturnPage()));
+                              },
                             ),
                           ],
                         ),
-
-                        const SizedBox(height: 20),
-                        const Divider(),
-                        const SizedBox(height: 5),
-
-                        // Menu Peminjaman
-                        _buildMenuButton(
-                          icon: Icons.assignment_add,
-                          title: 'Peminjaman Barang',
-                          onTap: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => const AddPage()));
-                          },
-                        ),
-
-                        const SizedBox(height: 5),
-                        const Divider(),
-                        const SizedBox(height: 5),
-
-                        _buildMenuButton(
-                          icon: Icons.edit_note,
-                          title: 'Pengambilan ATK',
-                          onTap: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => const TakePage()));
-                          },
-                        ),
-
-                        const SizedBox(height: 5),
-                        const Divider(),
-                        const SizedBox(height: 5),
-
-                        // Menu Pengembalian
-                        _buildMenuButton(
-                          icon: Icons.assignment_return,
-                          title: 'Pengembalian Barang',
-                          onTap: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => const ReturnPage()));
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Footer
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  child: Center(
-                    child: Text(
-                      '© 2025 BMKG Inventory System',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey.shade600,
                       ),
                     ),
-                  ),
+
+                    const SizedBox(height: 24),
+
+                    // Footer
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      child: Center(
+                        child: Text(
+                          '© 2025 BMKG Inventory System',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ]),
           ),
         ),
       ),
@@ -392,34 +395,57 @@ class _HomeState extends State<HomePage> {
   }
 
   // Widget untuk membuat card statistik
-  Widget _buildStatCard(
-      String value, String label, IconData icon, Color color) {
+  Widget _buildStatCard(String value, String label, IconData icon,
+      Color textColor, Color iconBgColor) {
+    // Menghitung lebar untuk card berdasarkan ukuran layar
+    final cardWidth = (MediaQuery.of(context).size.width - 80) / 3;
+
     return Container(
-      padding: const EdgeInsets.all(16),
+      width: cardWidth,
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.15),
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: color, size: 28),
+          // Icon dengan background lingkaran
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: iconBgColor.withOpacity(0.2),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: iconBgColor, size: 24),
+          ),
           const SizedBox(height: 12),
+          // Value dengan ukuran yang lebih besar
           Text(
             value,
             style: TextStyle(
-              fontSize: 24,
+              fontSize: 28,
               fontWeight: FontWeight.bold,
-              color: color,
+              color: textColor,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
+          // Label
           Text(
             label,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 12,
-              color: color.withOpacity(0.9),
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: textColor.withOpacity(0.9),
             ),
           ),
         ],

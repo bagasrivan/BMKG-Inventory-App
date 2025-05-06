@@ -233,9 +233,9 @@ class _LoginState extends State<LoginPage> with SingleTickerProviderStateMixin {
                       ],
                     ),
                     child: const Text(
-                      'BMKG INVENTORY SYSTEM',
+                      'STAMET SYAMSUDIN NOOR INVENTORY SYSTEM',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 12,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                         letterSpacing: 1.0,
