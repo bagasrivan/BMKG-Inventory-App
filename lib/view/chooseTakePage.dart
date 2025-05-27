@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:bmkg_inventory_system/view/scanPage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -234,12 +235,15 @@ class _ChooseTakeState extends State<ChooseTakePage> {
 
   void _showQuantityDialog(InventoryItem item) {
     int quantity = 1; // Default quantity
+    final TextEditingController quantityController =
+        TextEditingController(text: '1');
 
     showDialog(
       context: context,
-      builder: (BuildContext context) {
+      barrierDismissible: true,
+      builder: (BuildContext dialogContext) {
         return StatefulBuilder(
-          builder: (context, setState) {
+          builder: (context, setDialogState) {
             return AlertDialog(
               title: Text('Pilih Jumlah ${item.nama}'),
               content: Column(
@@ -255,25 +259,80 @@ class _ChooseTakeState extends State<ChooseTakePage> {
                         color: bmkgBlue,
                         onPressed: quantity > 1
                             ? () {
-                                setState(() {
+                                setDialogState(() {
                                   quantity--;
+                                  quantityController.text = quantity.toString();
                                 });
                               }
                             : null,
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey.shade300),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          '$quantity',
+                        width: 80,
+                        child: TextField(
+                          controller: quantityController,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
+                          textAlign: TextAlign.center,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide:
+                                  BorderSide(color: Colors.grey.shade300),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide:
+                                  BorderSide(color: Colors.grey.shade300),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide:
+                                  const BorderSide(color: bmkgBlue, width: 2),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 12),
+                          ),
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
+                          onChanged: (value) {
+                            if (value.isEmpty) return;
+
+                            int? newQuantity = int.tryParse(value);
+                            if (newQuantity != null &&
+                                newQuantity > 0 &&
+                                newQuantity <= item.stok) {
+                              setDialogState(() {
+                                quantity = newQuantity;
+                              });
+                            } else if (newQuantity != null &&
+                                newQuantity > item.stok) {
+                              // Jika melebihi stok, set ke maksimum stok
+                              setDialogState(() {
+                                quantity = item.stok;
+                                quantityController.text = item.stok.toString();
+                                quantityController.selection =
+                                    TextSelection.fromPosition(
+                                  TextPosition(
+                                      offset: quantityController.text.length),
+                                );
+                              });
+                            } else if (newQuantity != null && newQuantity < 1) {
+                              // Jika kurang dari 1, set ke 1
+                              setDialogState(() {
+                                quantity = 1;
+                                quantityController.text = '1';
+                                quantityController.selection =
+                                    TextSelection.fromPosition(
+                                  TextPosition(
+                                      offset: quantityController.text.length),
+                                );
+                              });
+                            }
+                          },
                         ),
                       ),
                       IconButton(
@@ -281,14 +340,24 @@ class _ChooseTakeState extends State<ChooseTakePage> {
                         color: bmkgBlue,
                         onPressed: quantity < item.stok
                             ? () {
-                                setState(() {
+                                setDialogState(() {
                                   quantity++;
+                                  quantityController.text = quantity.toString();
                                 });
                               }
                             : null,
                       ),
                     ],
                   ),
+                  const SizedBox(height: 8),
+                  if (quantity > item.stok)
+                    Text(
+                      'Jumlah tidak boleh melebihi stok tersedia',
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontSize: 12,
+                      ),
+                    ),
                 ],
               ),
               shape: RoundedRectangleBorder(
@@ -296,7 +365,10 @@ class _ChooseTakeState extends State<ChooseTakePage> {
               ),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () {
+                    quantityController.dispose();
+                    Navigator.of(dialogContext).pop();
+                  },
                   child: const Text(
                     'Batal',
                     style: TextStyle(color: bmkgBlue),
@@ -309,17 +381,20 @@ class _ChooseTakeState extends State<ChooseTakePage> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  onPressed: () {
-                    // Tambahkan item ke daftar dengan jumlahnya
-                    this.setState(() {
-                      selectedItems.add({
-                        'id': item.id,
-                        'nama': item.nama,
-                        'jumlah': quantity,
-                      });
-                    });
-                    Navigator.of(context).pop();
-                  },
+                  onPressed: quantity > 0 && quantity <= item.stok
+                      ? () {
+                          // Tambahkan item ke daftar dengan jumlahnya
+                          this.setState(() {
+                            selectedItems.add({
+                              'id': item.id,
+                              'nama': item.nama,
+                              'jumlah': quantity,
+                            });
+                          });
+                          quantityController.dispose();
+                          Navigator.of(dialogContext).pop();
+                        }
+                      : null,
                   child: const Text(
                     'Konfirmasi',
                     style: TextStyle(color: Colors.white),

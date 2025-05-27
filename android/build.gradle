@@ -8,6 +8,13 @@ allprojects {
 rootProject.buildDir = "../build"
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
+	afterEvaluate {project ->
+        if (project.hasProperty('android')) {
+            if (!project.android.hasProperty('namespace') && project.name == 'qr_code_scanner') {
+                project.android.namespace = "net.touchcapture.qr.flutterqr"
+            }
+        }
+    }
 }
 subprojects {
     project.evaluationDependsOn(":app")

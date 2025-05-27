@@ -203,7 +203,7 @@ class _LoginState extends State<LoginPage> with SingleTickerProviderStateMixin {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(15),
                         child: Image.asset(
-                          'assets/icon.png',
+                          'assets/logo-no-bg.png',
                           height: isSmallScreen ? 75 : 60,
                           fit: BoxFit.contain,
                         ),
@@ -235,7 +235,7 @@ class _LoginState extends State<LoginPage> with SingleTickerProviderStateMixin {
                     child: const Text(
                       'STAMET SYAMSUDIN NOOR INVENTORY SYSTEM',
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 10,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                         letterSpacing: 1.0,

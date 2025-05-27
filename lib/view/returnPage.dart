@@ -32,7 +32,7 @@ class BorrowedItem {
     required this.location,
     required this.borrowerName,
     required this.condition,
-    required this.notes,
+    this.notes = "",
     this.isSelected = false,
   });
 
@@ -82,9 +82,17 @@ class _ReturnState extends State<ReturnPage> {
   final List<String> _defaultWarehouses = [
     "Tata Usaha",
     "Radar",
-    "Operasional"
+    "Operasional",
+    "Aerologi",
+    "Teknisi"
   ];
-  List<String> _warehouseOptions = ["Tata Usaha", "Radar", "Operasional"];
+  List<String> _warehouseOptions = [
+    "Tata Usaha",
+    "Radar",
+    "Operasional",
+    "Aerologi",
+    "Teknisi"
+  ];
 
   // Nama bulan dalam bahasa Indonesia
   final List<String> _namabulan = [
@@ -284,7 +292,7 @@ class _ReturnState extends State<ReturnPage> {
     }
 
     String extractField(List<String> possibleFields,
-        {String defaultValue = 'Tidak Diketahui'}) {
+        {String defaultValue = ''}) {
       for (var field in possibleFields) {
         if (itemMap.containsKey(field) && itemMap[field] != null) {
           return itemMap[field].toString();
@@ -413,7 +421,8 @@ class _ReturnState extends State<ReturnPage> {
                               ),
                               if (item.notes.isNotEmpty)
                                 Padding(
-                                  padding: const EdgeInsets.only(left: 14.0),
+                                  padding: const EdgeInsets.only(
+                                      left: 14.0, top: 2.0),
                                   child: Text(
                                     "Catatan: ${item.notes}",
                                     style: const TextStyle(
@@ -488,6 +497,7 @@ class _ReturnState extends State<ReturnPage> {
     );
   }
 
+  // This is the updated _submitForm() method with the new "detail" field in the API request
   Future<void> _submitForm() async {
     // Tambahkan pengecekan mounted
     if (!mounted) return;
@@ -501,17 +511,22 @@ class _ReturnState extends State<ReturnPage> {
       print('Selected Items for Return:');
       for (var item in selectedItems) {
         print(
-            'Loan ID: ${item.id}, Item ID: ${item.barangId}, Name: ${item.name}');
+            'Loan ID: ${item.id}, Item ID: ${item.barangId}, Name: ${item.name}, Notes: ${item.notes}');
       }
 
       // Kumpulkan ID PEMINJAMAN (bukan ID barang) yang akan dikembalikan
       final loanIds = selectedItems.map((item) => item.id).toList();
 
-      // Kirim request ke API dengan struktur baru termasuk gudang
+      // Kumpulkan detail/catatan untuk setiap barang yang dikembalikan
+      final itemDetails = selectedItems.map((item) => item.notes).toList();
+
+      // Kirim request ke API dengan struktur baru termasuk gudang dan detail
       final requestBody = {
         "id_user": _userId,
+        "gudang": _selectedWarehouse,
         "daftar_barang": loanIds, // Menggunakan ID peminjaman, bukan ID barang
-        "gudang": _selectedWarehouse
+        "detail":
+            itemDetails // Menambahkan array detail sesuai permintaan API baru
       };
 
       // Tambahkan token otorisasi jika diperlukan
@@ -563,8 +578,8 @@ class _ReturnState extends State<ReturnPage> {
         }
       }
       Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => const Navigation()),
-            (Route<dynamic> route) => false);
+          MaterialPageRoute(builder: (context) => const Navigation()),
+          (Route<dynamic> route) => false);
     } catch (e) {
       print('Form Submission Error: $e');
 
@@ -1060,6 +1075,11 @@ class _ReturnState extends State<ReturnPage> {
     final isSelected =
         selectedItems.any((selectedItem) => selectedItem.id == item.id);
 
+    // Find the index of the selected item to show notes field if selected
+    final selectedItemIndex = isSelected
+        ? selectedItems.indexWhere((selectedItem) => selectedItem.id == item.id)
+        : -1;
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 1,
@@ -1087,96 +1107,134 @@ class _ReturnState extends State<ReturnPage> {
         borderRadius: BorderRadius.circular(10),
         child: Padding(
           padding: const EdgeInsets.all(12),
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? bmkgBlue.withOpacity(0.2)
-                        : bmkgLightBlue.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? bmkgBlue.withOpacity(0.2)
+                          : bmkgLightBlue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      isSelected ? Icons.check_circle : Icons.inventory_2,
+                      color: isSelected ? bmkgBlue : bmkgLightBlue,
+                      size: 20,
+                    ),
                   ),
-                  child: Icon(
-                    isSelected ? Icons.check_circle : Icons.inventory_2,
-                    color: isSelected ? bmkgBlue : bmkgLightBlue,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.name,
-                        style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 15,
-                          color: isSelected ? bmkgBlue : Colors.black87,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.name,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 15,
+                            color: isSelected ? bmkgBlue : Colors.black87,
+                          ),
                         ),
-                      ),
-                      Text(
-                        "ID Barang: ${item.id}",
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
+                        Text(
+                          "ID Barang: ${item.id}",
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                Icon(
-                  isSelected
-                      ? Icons.check_circle
-                      : Icons.radio_button_unchecked,
-                  color: isSelected ? Colors.green : Colors.grey,
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
+                  Icon(
+                    isSelected
+                        ? Icons.check_circle
+                        : Icons.radio_button_unchecked,
+                    color: isSelected ? Colors.green : Colors.grey,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
 
-            // Information about the borrowing
-            Row(
-              children: [
-                Icon(Icons.person, size: 16, color: Colors.grey[600]),
-                const SizedBox(width: 6),
+              // Information about the borrowing
+              Row(
+                children: [
+                  Icon(Icons.location_on, size: 16, color: Colors.grey[600]),
+                  const SizedBox(width: 6),
+                  Text(
+                    item.location,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Icon(Icons.calendar_today, size: 16, color: Colors.grey[600]),
+                  const SizedBox(width: 6),
+                  Text(
+                    "Dipinjam: ${_formatTanggal(item.borrowedDate)}",
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ],
+              ),
+
+              // Add notes field if item is selected
+              if (isSelected && selectedItemIndex != -1) ...[
+                const SizedBox(height: 12),
+                const Divider(),
+                const SizedBox(height: 8),
                 Text(
-                  item.borrowerName,
+                  "Catatan Pengembalian:",
                   style: TextStyle(
                     fontSize: 13,
+                    fontWeight: FontWeight.w500,
                     color: Colors.grey[700],
                   ),
                 ),
-                const SizedBox(width: 12),
-                Icon(Icons.location_on, size: 16, color: Colors.grey[600]),
-                const SizedBox(width: 6),
-                Text(
-                  item.location,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey[700],
+                const SizedBox(height: 8),
+                TextFormField(
+                  initialValue: selectedItems[selectedItemIndex].notes,
+                  onChanged: (value) {
+                    setState(() {
+                      selectedItems[selectedItemIndex] =
+                          selectedItems[selectedItemIndex]
+                              .copyWith(notes: value);
+                    });
+                  },
+                  decoration: InputDecoration(
+                    hintText: "Masukkan catatan pengembalian (opsional)",
+                    hintStyle: TextStyle(fontSize: 13, color: Colors.grey[400]),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 12),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Colors.grey[300]!),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Colors.grey[300]!),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: const BorderSide(color: bmkgBlue),
+                    ),
                   ),
+                  maxLines: 2,
+                  style: const TextStyle(fontSize: 14),
                 ),
               ],
-            ),
-            const SizedBox(height: 6),
-            Row(
-              children: [
-                Icon(Icons.calendar_today, size: 16, color: Colors.grey[600]),
-                const SizedBox(width: 6),
-                Text(
-                  "Dipinjam: ${_formatTanggal(item.borrowedDate)}",
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey[700],
-                  ),
-                ),
-              ],
-            ),
-          ]),
+            ],
+          ),
         ),
       ),
     );

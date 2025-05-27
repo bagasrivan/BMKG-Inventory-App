@@ -1,6 +1,7 @@
 import 'package:bmkg_inventory_system/view/addPage.dart';
 import 'package:bmkg_inventory_system/view/homePage.dart';
 import 'package:bmkg_inventory_system/view/inventoryPage.dart';
+import 'package:bmkg_inventory_system/view/listPage.dart';
 import 'package:bmkg_inventory_system/view/profilePage.dart';
 import 'package:bmkg_inventory_system/view/returnPage.dart';
 import 'package:bmkg_inventory_system/view/scanPage.dart';
@@ -185,7 +186,7 @@ class _NavigationState extends State<Navigation> {
                 },
               ),
               _buildQuickActionButton(
-                icon: Icons.edit_note,
+                icon: Icons.edit_note_rounded,
                 label: 'Pengambilan ATK',
                 onTap: () {
                   Navigator.push(
@@ -195,7 +196,17 @@ class _NavigationState extends State<Navigation> {
                 },
               ),
               _buildQuickActionButton(
-                icon: Icons.assignment_return,
+                icon: Icons.inventory_rounded,
+                label: 'Barang Dipinjam',
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const ListPage()));
+                },
+              ),
+              _buildQuickActionButton(
+                icon: Icons.assignment_return_rounded,
                 label: 'Pengembalian Barang',
                 onTap: () {
                   Navigator.push(

@@ -56,7 +56,9 @@ class _InventoryState extends State<InventoryPage> {
     "Alat Tulis",
     "Operasional",
     "Tata Usaha",
-    "Radar"
+    "Radar",
+    "Aerologi",
+    "Teknisi",
   ];
   String selectedCategory = "Semua";
 
@@ -278,7 +280,7 @@ class _InventoryState extends State<InventoryPage> {
         iconData = Icons.access_time;
         break;
       case 'perkakas':
-        iconData = Icons.build;
+        iconData = Icons.handyman;
         break;
       case 'alat tulis':
         iconData = Icons.edit;
@@ -291,6 +293,12 @@ class _InventoryState extends State<InventoryPage> {
         break;
       case 'radar':
         iconData = Icons.radar;
+        break;
+      case 'aerologi':
+        iconData = Icons.airplanemode_active;
+        break;
+      case 'teknisi':
+        iconData = Icons.engineering;
         break;
       default:
         iconData = Icons.category;
